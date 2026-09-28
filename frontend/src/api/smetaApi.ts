@@ -1,20 +1,6 @@
+import type { DbWork, NormalizedWork } from '../types'
+
 const API_URL = 'http://localhost:3000/api'
-
-export interface DbWork {
-	_id: number
-	vid: string
-	price: string | number
-	izmer: string
-	kategor: string
-}
-
-export interface NormalizedWork {
-	id: number
-	name: string
-	unit: string
-	price: number
-	category: string
-}
 
 /** Получить все работы из БД */
 export async function fetchWorks(): Promise<DbWork[]> {

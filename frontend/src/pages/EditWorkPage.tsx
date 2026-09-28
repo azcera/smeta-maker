@@ -1,12 +1,9 @@
 import { ArrowLeft, Save, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import {
-	fetchWorks,
-	normalizeDbWork,
-	type NormalizedWork
-} from '../api/smetaApi'
+import { fetchWorks, normalizeDbWork } from '../api/smetaApi'
 import { useSmetaStore } from '../store/smetaStore'
+import type { NormalizedWork } from '../types'
 
 export default function EditWorkPage() {
 	const { placeId: paramPlaceId, id } = useParams()
