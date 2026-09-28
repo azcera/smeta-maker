@@ -292,20 +292,83 @@ app.post(
 	async (req: Request, res: Response) => {
 		try {
 			if (!req.file || !req.file.buffer) {
-				return res.status(400).json({ error: 'Файл не загружен' })
+				return res
+					.status(400)
+					.json({ error: 'Файл не загружен', param: req.file || 'нет' })
 			}
 
-			// Создаем чистый Node.js Buffer
 			const fileBuffer = Buffer.from(req.file.buffer)
-
 			const workbook = new ExcelJS.Workbook()
 			await workbook.xlsx.load(fileBuffer as any)
 
 			const sheet = workbook.worksheets[0]
+			if (!sheet) {
+				return res.status(400).json({ error: 'В файле нет листов' })
+			}
+
+			let places: Record<string, any[]> = {}
+			let isEnd = false
+			let transportCost: number | undefined = undefined
+
+			const getNumValue = (cell: ExcelJS.Cell): number => {
+				const val = cell.value
+				if (val && typeof val === 'object' && 'result' in val) {
+					return Number(val.result) || 0
+				}
+				return Number(val) || 0
+			}
+
+			sheet.eachRow((row, num) => {
+				if (num < 9 || isEnd) return
+
+				const col1 = row.getCell(1).toString().trim()
+				const col2 = row.getCell(2).toString().trim()
+
+				if (col2.includes('ИТОГО:')) {
+					isEnd = true
+					return
+				}
+				if (col2.includes('ТРАНСПОРТНЫЕ РАСХОДЫ')) {
+					isEnd = true
+					transportCost = getNumValue(row.getCell(5))
+					return
+				}
+
+				if (col1.length === 0) {
+					if (col2) {
+						// Создаем место, только если имя не пустое
+						places[col2] = []
+					}
+				} else {
+					const keys = Object.keys(places)
+					const lastPlace = keys[keys.length - 1]
+
+					if (!lastPlace) return
+
+					places[lastPlace].push({
+						name: col2,
+						price: getNumValue(row.getCell(5)),
+						quantity: getNumValue(row.getCell(4)),
+						unit: row.getCell(3).toString()
+					})
+				}
+			})
+
+			const c4Cell = sheet.getCell('C4')
+			const objectName =
+				c4Cell.value &&
+				typeof c4Cell.value === 'object' &&
+				'result' in c4Cell.value
+					? c4Cell.value.result
+					: c4Cell.value
 
 			res.json({
 				success: true,
-				data: []
+				data: {
+					object: objectName?.toString() || null,
+					places: places,
+					transportCost: transportCost
+				}
 			})
 		} catch (err: any) {
 			console.error(err)
