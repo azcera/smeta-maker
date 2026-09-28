@@ -174,6 +174,7 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 
 				row.getCell(4).value = qty
 				row.getCell(5).value = price
+				row.getCell(5).numFmt = '#,##0"р."'
 				row.getCell(6).value = {
 					formula: `D${currentRow}*E${currentRow}`,
 					result: sum
