@@ -1,0 +1,30 @@
+{
+	"name": "smeta_maker_backend",
+	"version": "1.0.0",
+	"description": "",
+	"license": "ISC",
+	"author": "azcera",
+	"type": "commonjs",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "ts-node src/index.ts"
+	},
+	"dependencies": {
+		"better-sqlite3": "^13.0.3",
+		"cors": "^2.8.6",
+		"exceljs": "^4.4.0",
+		"express": "^5.2.1",
+		"multer": "^2.4.0",
+		"transliteration": "^2.6.1"
+	},
+	"devDependencies": {
+		"@types/better-sqlite3": "^9.6.0",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"@types/multer": "^2.2.0",
+		"@types/node": "^26.6.3",
+		"ts-node": "^10.9.2",
+		"typescript": "5.4"
+	}
+}
