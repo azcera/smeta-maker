@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { type Place, type Work } from '../types'
+import type { Place, PlacesArray, Work } from '../types'
 
 interface SmetaStore {
 	objectName: string
@@ -19,7 +19,7 @@ interface SmetaStore {
 	addWork: (placeId: string, work: Omit<Work, 'id'>) => void
 	updateWork: (placeId: string, workId: string, data: Partial<Work>) => void
 	removeWork: (placeId: string, workId: string) => void
-
+	addParsedWorks: (parsedWorks: PlacesArray) => void
 	clearAll: () => void
 }
 
@@ -64,6 +64,28 @@ export const useSmetaStore = create<SmetaStore>()(
 							: p
 					)
 				})),
+
+			addParsedWorks: parsedWorks => {
+				let arrayPlace: Place[] = []
+				Object.entries(parsedWorks).forEach(place =>
+					arrayPlace.push({
+						id: crypto.randomUUID(),
+						name: place[0],
+						works: place[1].map(item => {
+							return {
+								id: crypto.randomUUID(),
+								name: item.name,
+								price: item.price,
+								quantity: item.quantity,
+								unit: item.unit
+							}
+						})
+					})
+				)
+				set({
+					places: arrayPlace
+				})
+			},
 
 			updateWork: (placeId, workId, data) =>
 				set(state => ({

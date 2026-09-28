@@ -28,3 +28,22 @@ export interface NormalizedWork {
 	price: number
 	category: string
 }
+
+export interface WorkItem {
+	name: string
+	unit: string
+	quantity: number
+	price: number
+}
+
+export type PlacesArray = Record<string, WorkItem[]>
+
+export interface UploadResponse {
+	success: boolean
+	data: {
+		object: string | null
+		places: PlacesArray
+		transportCost?: number
+	}
+	error?: string
+}

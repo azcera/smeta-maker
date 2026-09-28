@@ -1,10 +1,50 @@
 import { ArrowLeft, Moon, Sun } from 'lucide-react'
+import { useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSmetaStore } from '../store/smetaStore'
+import type { UploadResponse } from '../types'
 
 export default function SettingsPage() {
-	const { objectName, setObjectName, isDark, setDark } = useSmetaStore()
+	const { objectName, setObjectName, isDark, setDark, addParsedWorks } =
+		useSmetaStore()
+	const [loading, setLoading] = useState(false)
+	const [error, setError] = useState<string | null>(null)
 	const navigate = useNavigate()
+
+	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+		try {
+			if (e.target.files && e.target.files.length > 0) {
+				const formData = new FormData()
+				if (!e.target.files[0]) {
+					setError('Пожалуйста, выберите файл')
+					return
+				}
+
+				setLoading(true)
+				setError(null)
+
+				formData.append('excel_file', e.target.files[0])
+				const response = await fetch('http://localhost:3000/api/upload-smeta', {
+					method: 'POST',
+					body: formData
+				})
+
+				const json: UploadResponse = await response.json()
+
+				if (!response.ok) {
+					throw new Error(json.error || 'Ошибка при загрузке файла')
+				}
+
+				if (json.data.object) {
+					setObjectName(json.data.object)
+				}
+
+				addParsedWorks(json.data.places)
+			}
+		} catch (err: any) {
+			setError(err.message || 'Произошла неизвестная ошибка')
+		}
+	}
 
 	return (
 		<div className='space-y-6 max-w-md mx-auto'>
@@ -92,6 +132,18 @@ export default function SettingsPage() {
 					</button>
 				</div>
 			</div>
+
+			{/* Импорт таблицы */}
+			<input
+				type='file'
+				accept='.xlsx, .xls'
+				onChange={handleFileChange}
+				className={`w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
+					isDark
+						? 'border-neutral-700 text-neutral-400 hover:bg-neutral-900'
+						: 'border-slate-300 text-slate-500 hover:bg-slate-50'
+				}`}
+			/>
 		</div>
 	)
 }
