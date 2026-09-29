@@ -6,11 +6,19 @@ interface SmetaStore {
 	objectName: string
 	places: Place[]
 	transportCost: number
+	trashCost: number
 	isDark: boolean
+	isTransportCost: boolean
+	isTrashCost: boolean
+	importedTable: string | null
 
 	setObjectName: (name: string) => void
 	setTransportCost: (value: number) => void
+	setTrashCost: (value: number) => void
 	setDark: (value: boolean) => void
+	setImportedTable: (value: string) => void
+	setIsTransportCost: (value: boolean) => void
+	setIsTrashCost: (value: boolean) => void
 
 	addPlace: (name: string) => string // возвращает id
 	removePlace: (placeId: string) => void
@@ -28,29 +36,50 @@ export const useSmetaStore = create<SmetaStore>()(
 		set => ({
 			objectName: '',
 			places: [],
-			transportCost: 0,
+			transportCost: 10000,
+			trashCost: 10000,
 			isDark: true,
+			isTransportCost: false,
+			isTrashCost: false,
+			importedTable: null,
 
 			setObjectName: name => set({ objectName: name }),
 			setTransportCost: value => set({ transportCost: value }),
+			setTrashCost: value => set({ trashCost: value }),
 			setDark: value => set({ isDark: value }),
+			setImportedTable: value => set({ importedTable: value }),
+
+			setIsTransportCost: value =>
+				set({
+					isTransportCost: value
+				}),
+
+			setIsTrashCost: value =>
+				set({
+					isTrashCost: value
+				}),
 
 			addPlace: name => {
 				const id = crypto.randomUUID()
 				set(state => ({
-					places: [...state.places, { id, name, works: [] }]
+					places: [...state.places, { id, name, works: [] }],
+					importedTable: null
 				}))
 				return id
 			},
 
 			removePlace: placeId =>
 				set(state => ({
-					places: state.places.filter(p => p.id !== placeId)
+					places: state.places.filter(p => p.id !== placeId),
+					importedTable: null
 				})),
 
 			renamePlace: (placeId, name) =>
 				set(state => ({
-					places: state.places.map(p => (p.id === placeId ? { ...p, name } : p))
+					places: state.places.map(p =>
+						p.id === placeId ? { ...p, name } : p
+					),
+					importedTable: null
 				})),
 
 			addWork: (placeId, work) =>
@@ -62,7 +91,8 @@ export const useSmetaStore = create<SmetaStore>()(
 									works: [...p.works, { ...work, id: crypto.randomUUID() }]
 								}
 							: p
-					)
+					),
+					importedTable: null
 				})),
 
 			addParsedWorks: parsedWorks => {
@@ -98,7 +128,8 @@ export const useSmetaStore = create<SmetaStore>()(
 									)
 								}
 							: p
-					)
+					),
+					importedTable: null
 				})),
 
 			removeWork: (placeId, workId) =>
@@ -107,10 +138,11 @@ export const useSmetaStore = create<SmetaStore>()(
 						p.id === placeId
 							? { ...p, works: p.works.filter(w => w.id !== workId) }
 							: p
-					)
+					),
+					importedTable: null
 				})),
 
-			clearAll: () => set({ places: [], transportCost: 0 })
+			clearAll: () => set({ places: [], transportCost: 0, importedTable: null })
 		}),
 		{
 			name: 'smeta-storage',
@@ -118,7 +150,11 @@ export const useSmetaStore = create<SmetaStore>()(
 				objectName: state.objectName,
 				places: state.places,
 				transportCost: state.transportCost,
-				isDark: state.isDark
+				isDark: state.isDark,
+				importedTable: state.importedTable,
+				isTransportCost: state.isTransportCost,
+				trashCost: state.trashCost,
+				isTrashCost: state.isTrashCost
 			})
 		}
 	)

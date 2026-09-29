@@ -4,7 +4,7 @@ import ExcelJS from 'exceljs'
 import express, { NextFunction, Request, Response } from 'express'
 import multer from 'multer'
 import path from 'path'
-import { slugify } from 'transliteration'
+import slugify from 'slugify'
 
 const app = express()
 const PORT = 3000
@@ -44,6 +44,7 @@ interface GenerateSmetaBody {
 	object?: string
 	places?: Places
 	transportCost?: number
+	trashCost?: number
 }
 
 // ========== Получение списка ==========
@@ -112,7 +113,12 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 	try {
 		const year = new Date().getFullYear()
 
-		const { object, places = {}, transportCost } = req.body as GenerateSmetaBody
+		const {
+			object,
+			places = {},
+			transportCost,
+			trashCost
+		} = req.body as GenerateSmetaBody
 
 		if (!object)
 			throw new Error('Не передано или некорректное наименование объекта')
@@ -215,6 +221,28 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 			currentRow++
 		}
 
+		if (trashCost) {
+			const trashRow = sheet.getRow(currentRow)
+			changeRowColor(trashRow, lightBlueColor)
+			trashRow.getCell(2).value = 'ВЫНОС И УБОРКА МУСОРА'
+			trashRow.getCell(3).value = 'комплекс'
+
+			trashRow.getCell(4).value = 1
+
+			trashRow.getCell(5).value = trashCost
+			trashRow.getCell(6).value = trashCost
+			trashRow.eachCell((cell, num) => {
+				cell.alignment = {
+					vertical: 'middle',
+					horizontal: num == 2 ? 'left' : 'center',
+					wrapText: true
+				}
+			})
+			trashRow.commit()
+			totalSum += Number(trashCost) || 0
+			currentRow++
+		}
+
 		// Итого
 		const totalRow = sheet.getRow(currentRow)
 		totalRow.font = { bold: true }
@@ -262,8 +290,9 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 
 		// Отдаём файл
 		const safeName = slugify(object, {
-			lowercase: true,
-			separator: '_'
+			lower: true,
+			strict: true,
+			replacement: '_'
 		}).substring(0, 40)
 
 		const filename = `smeta_${safeName || 'document'}.xlsx`
@@ -276,6 +305,8 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 			'Content-Disposition',
 			`attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
 		)
+
+		res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition')
 
 		await workbook.xlsx.write(res)
 		res.end()
@@ -309,6 +340,7 @@ app.post(
 			let places: Record<string, any[]> = {}
 			let isEnd = false
 			let transportCost: number | undefined = undefined
+			let trashCost: number | undefined = undefined
 
 			const getNumValue = (cell: ExcelJS.Cell): number => {
 				const val = cell.value
@@ -331,6 +363,11 @@ app.post(
 				if (col2.includes('ТРАНСПОРТНЫЕ РАСХОДЫ')) {
 					isEnd = true
 					transportCost = getNumValue(row.getCell(5))
+					return
+				}
+				if (col2.includes('ВЫНОС И УБОРКА МУСОРА')) {
+					isEnd = true
+					trashCost = getNumValue(row.getCell(5))
 					return
 				}
 
@@ -366,8 +403,9 @@ app.post(
 				success: true,
 				data: {
 					object: objectName?.toString() || null,
-					places: places,
-					transportCost: transportCost
+					places,
+					transportCost,
+					trashCost
 				}
 			})
 		} catch (err: any) {

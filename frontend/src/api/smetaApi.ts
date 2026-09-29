@@ -44,6 +44,7 @@ export async function generateSmeta(payload: {
 		{ name: string; unit: string; quantity: number; price: number }[]
 	>
 	transportCost?: number
+	trashCost?: number
 }) {
 	const res = await fetch(`${API_URL}/generate-smeta`, {
 		method: 'POST',

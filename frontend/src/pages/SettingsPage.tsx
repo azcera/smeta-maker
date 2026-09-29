@@ -1,15 +1,36 @@
-import { ArrowLeft, Moon, Sun } from 'lucide-react'
-import { useState, type ChangeEvent } from 'react'
+import { ArrowLeft, Moon, Sun, Trash, Truck } from 'lucide-react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Switcher from '../components/ui/Switcher'
 import { useSmetaStore } from '../store/smetaStore'
 import type { UploadResponse } from '../types'
 
 export default function SettingsPage() {
-	const { objectName, setObjectName, isDark, setDark, addParsedWorks } =
-		useSmetaStore()
+	const {
+		objectName,
+		setObjectName,
+		isDark,
+		setDark,
+		importedTable,
+		setImportedTable,
+		addParsedWorks,
+		setIsTransportCost,
+		isTransportCost,
+		transportCost,
+		setTransportCost,
+		trashCost,
+		setTrashCost,
+		setIsTrashCost,
+		isTrashCost
+	} = useSmetaStore()
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const navigate = useNavigate()
+	const fileInputRef = useRef<HTMLInputElement>(null)
+
+	const handleButtonClick = () => {
+		fileInputRef.current?.click()
+	}
 
 	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
 		try {
@@ -35,14 +56,53 @@ export default function SettingsPage() {
 					throw new Error(json.error || 'Ошибка при загрузке файла')
 				}
 
+				setImportedTable(e.target.files[0].name)
+
 				if (json.data.object) {
 					setObjectName(json.data.object)
+				}
+
+				if (json.data.transportCost) {
+					setIsTransportCost(true)
+					setTransportCost(json.data.transportCost)
+				}
+
+				if (json.data.trashCost) {
+					setIsTrashCost(true)
+					setTrashCost(json.data.trashCost)
 				}
 
 				addParsedWorks(json.data.places)
 			}
 		} catch (err: any) {
 			setError(err.message || 'Произошла неизвестная ошибка')
+		}
+	}
+
+	const handleCostChange = (
+		e: ChangeEvent<HTMLInputElement>,
+		f: (value: number) => void
+	) => {
+		let inputValue = e.target.value
+
+		if (inputValue.length > 1 && inputValue.startsWith('0')) {
+			inputValue = inputValue.replace(/^0+/, '')
+		}
+
+		if (inputValue === '00') {
+			return
+		}
+
+		let numericValue = Number(inputValue)
+
+		if (numericValue < 0) {
+			numericValue = 0
+		}
+
+		if (inputValue === '' || isNaN(numericValue)) {
+			f(0)
+		} else {
+			f(numericValue)
 		}
 	}
 
@@ -93,56 +153,61 @@ export default function SettingsPage() {
 				/>
 			</div>
 
-			{/* Переключатель темы */}
-			<div
-				className={`rounded-2xl p-5 ${
-					isDark
-						? 'bg-neutral-900'
-						: 'bg-white border border-slate-200 shadow-sm'
-				}`}
-			>
-				<div className='flex items-center justify-between'>
-					<div className='flex items-center gap-3'>
-						{isDark ? (
-							<Moon className='w-5 h-5 text-blue-400' />
-						) : (
-							<Sun className='w-5 h-5 text-amber-500' />
-						)}
-						<div>
-							<p className='font-medium text-sm'>Тёмная тема</p>
-							<p
-								className={`text-xs ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
-							>
-								{isDark ? 'Сейчас включена' : 'Сейчас выключена'}
-							</p>
-						</div>
-					</div>
-
-					<button
-						onClick={() => setDark(!isDark)}
-						className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer ${
-							isDark ? 'bg-blue-600' : 'bg-slate-300'
-						}`}
-					>
-						<div
-							className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-								isDark ? 'translate-x-6' : 'translate-x-1'
-							}`}
-						/>
-					</button>
-				</div>
+			{/* Импорт таблицы */}
+			<div>
+				<input
+					ref={fileInputRef}
+					type='file'
+					accept='.xlsx, .xls'
+					onChange={handleFileChange}
+					className={`hidden`}
+				/>
+				<button
+					onClick={handleButtonClick}
+					className={`w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
+						isDark
+							? 'border-neutral-700 text-neutral-400 hover:bg-neutral-900'
+							: 'border-slate-300 text-slate-500 hover:bg-slate-50'
+					}`}
+				>
+					{!importedTable
+						? 'Импортировать таблицу'
+						: `Загруженная таблица: ${importedTable}`}
+				</button>
 			</div>
 
-			{/* Импорт таблицы */}
-			<input
-				type='file'
-				accept='.xlsx, .xls'
-				onChange={handleFileChange}
-				className={`w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
-					isDark
-						? 'border-neutral-700 text-neutral-400 hover:bg-neutral-900'
-						: 'border-slate-300 text-slate-500 hover:bg-slate-50'
-				}`}
+			<Switcher
+				icons={{ dark: Moon, light: Sun }}
+				description={{ dark: 'Сейчас включена', light: 'Сейчас выключена' }}
+				switchable={isDark}
+				setSwitchable={setDark}
+				title='Тёмная тема'
+			/>
+
+			<Switcher
+				icons={{ dark: Truck }}
+				description={{
+					dark: 'Сейчас учитываются',
+					light: 'Сейчас  не учитываются'
+				}}
+				switchable={isTransportCost}
+				setSwitchable={setIsTransportCost}
+				title='Транспортные расходы'
+				inputValue={transportCost.toString()}
+				onInputChange={e => handleCostChange(e, setTransportCost)}
+			/>
+
+			<Switcher
+				icons={{ dark: Trash }}
+				description={{
+					dark: 'Сейчас учитывается',
+					light: 'Сейчас  не учитывается'
+				}}
+				switchable={isTrashCost}
+				setSwitchable={setIsTrashCost}
+				title='Вынос мусора'
+				inputValue={trashCost.toString()}
+				onInputChange={e => handleCostChange(e, setTrashCost)}
 			/>
 		</div>
 	)

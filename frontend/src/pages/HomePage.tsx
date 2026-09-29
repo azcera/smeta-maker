@@ -1,6 +1,7 @@
 import { Download, Plus, Settings, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import slugify from 'slugify'
 import { generateSmeta } from '../api/smetaApi'
 import AddPlaceModal from '../components/AddPlaceModal'
 import { useSmetaStore } from '../store/smetaStore'
@@ -27,6 +28,7 @@ export default function HomePage() {
 		places,
 		objectName,
 		transportCost,
+		trashCost,
 		isDark,
 		removePlace,
 		removeWork,
@@ -75,14 +77,21 @@ export default function HomePage() {
 			const blob = await generateSmeta({
 				object: objectName,
 				places: placesPayload,
-				transportCost: transportCost || undefined
+				transportCost: transportCost || undefined,
+				trashCost: trashCost || undefined
 			})
 
 			// Скачивание файла
 			const url = URL.createObjectURL(blob)
 			const a = document.createElement('a')
 			a.href = url
-			a.download = `smeta_${objectName.slice(0, 30)}.xlsx`
+
+			const safeName = slugify(objectName, {
+				lower: true,
+				replacement: '_',
+				locale: 'ru'
+			}).substring(0, 40)
+			a.download = `smeta_${safeName || 'document'}.xlsx`
 			a.click()
 			URL.revokeObjectURL(url)
 		} catch (err: any) {

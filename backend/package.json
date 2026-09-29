@@ -16,7 +16,7 @@
 		"exceljs": "^4.4.0",
 		"express": "^5.2.1",
 		"multer": "^2.4.0",
-		"transliteration": "^2.6.1"
+		"slugify": "^1.6.9"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^9.6.0",

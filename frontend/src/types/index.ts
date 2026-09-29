@@ -44,6 +44,7 @@ export interface UploadResponse {
 		object: string | null
 		places: PlacesArray
 		transportCost?: number
+		trashCost?: number
 	}
 	error?: string
 }

@@ -23,7 +23,7 @@ export default function EditWorkPage() {
 	const [step, setStep] = useState<'search' | 'form'>(isNew ? 'search' : 'form')
 	const [query, setQuery] = useState('')
 	const [name, setName] = useState('')
-	const [unit, setUnit] = useState('м²')
+	const [unit, setUnit] = useState('комплекс')
 	const [quantity, setQuantity] = useState(0)
 	const [price, setPrice] = useState(0)
 	const [fromDb, setFromDb] = useState(false)
@@ -50,9 +50,10 @@ export default function EditWorkPage() {
 				const normalized = raw.map(normalizeDbWork)
 				setDbWorks(normalized)
 
-				const uniqueUnits = Array.from(
+				let uniqueUnits = Array.from(
 					new Set(normalized.map(w => w.unit).filter(Boolean))
 				).sort()
+				uniqueUnits.push('комплекс')
 				if (uniqueUnits.length > 0) setUnits(uniqueUnits)
 			} catch (err) {
 				setError('Не удалось загрузить базу работ')
