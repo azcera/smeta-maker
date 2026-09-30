@@ -2,8 +2,9 @@ import { ArrowLeft, Save, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { fetchWorks, normalizeDbWork } from '../api/smetaApi'
+import Modal from '../components/Modal'
 import { useSmetaStore } from '../store/smetaStore'
-import type { NormalizedWork } from '../types'
+import type { ModalMessageType, NormalizedWork } from '../types'
 
 export default function EditWorkPage() {
 	const { placeId: paramPlaceId, id } = useParams()
@@ -25,6 +26,8 @@ export default function EditWorkPage() {
 	const [name, setName] = useState('')
 	const [unit, setUnit] = useState('комплекс')
 	const [quantity, setQuantity] = useState(0)
+	const [tempQuantity, setTempQuantity] = useState(0)
+
 	const [price, setPrice] = useState(0)
 	const [fromDb, setFromDb] = useState(false)
 
@@ -38,6 +41,12 @@ export default function EditWorkPage() {
 	])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState('')
+
+	const [isErrorModal, setIsErrorModal] = useState(false)
+	const [modalMessage, setModalMessage] = useState<ModalMessageType>({
+		title: 'Ошибка',
+		description: ''
+	})
 
 	useEffect(() => {
 		if (step !== 'search') return
@@ -103,10 +112,16 @@ export default function EditWorkPage() {
 		setStep('form')
 	}
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = (e: React.ChangeEvent) => {
 		e.preventDefault()
-		if (!name.trim()) return alert('Введите название')
-		if (!placeId) return alert('Не выбрано помещение')
+		if (!name.trim()) {
+			setModalMessage({
+				...modalMessage,
+				description: 'Введите название'
+			})
+			setIsErrorModal(true)
+			return
+		}
 
 		if (isNew) {
 			addWork(placeId, { name, unit, quantity, price, fromDb })
@@ -271,7 +286,15 @@ export default function EditWorkPage() {
 						</label>
 						<select
 							value={unit}
-							onChange={e => setUnit(e.target.value)}
+							onChange={e => {
+								setUnit(e.target.value)
+								if (e.target.value === 'комплекс') {
+									setTempQuantity(quantity)
+									setQuantity(1)
+								} else {
+									setQuantity(tempQuantity)
+								}
+							}}
 							className={inputClass}
 						>
 							{units.map(u => (
@@ -293,13 +316,16 @@ export default function EditWorkPage() {
 						</label>
 						<input
 							ref={quantityRef}
+							disabled={unit === 'комплекс'}
 							type='number'
 							min='0'
 							step='any'
 							value={quantity || ''}
-							onChange={e =>
-								setQuantity(e.target.value === '' ? 0 : Number(e.target.value))
-							}
+							onChange={e => {
+								const value = e.target.value === '' ? 0 : Number(e.target.value)
+								setTempQuantity(value)
+								setQuantity(value)
+							}}
 							className={inputClass}
 						/>
 					</div>
@@ -348,6 +374,18 @@ export default function EditWorkPage() {
 					{isNew ? 'Добавить' : 'Сохранить'}
 				</button>
 			</form>
+			<Modal
+				buttons={{
+					blue: {
+						title: 'Ок',
+						onClick: () => setIsErrorModal(false)
+					}
+				}}
+				description={modalMessage.description}
+				isOpen={isErrorModal}
+				onClose={() => setIsErrorModal(false)}
+				title={modalMessage.title}
+			/>
 		</div>
 	)
 }

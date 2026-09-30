@@ -1,8 +1,11 @@
-import { ArrowLeft, Moon, Sun, Trash, Truck } from 'lucide-react'
-import { useRef, useState, type ChangeEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, Eye, Moon, Sun, Trash, Truck } from 'lucide-react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import ListSwitcher, {
+	type SwitcherOption
+} from '../components/ui/ListSwitcher'
 import Switcher from '../components/ui/Switcher'
-import { useSmetaStore } from '../store/smetaStore'
+import { useSmetaStore, type ViewTypes } from '../store/smetaStore'
 import type { UploadResponse } from '../types'
 
 export default function SettingsPage() {
@@ -21,16 +24,27 @@ export default function SettingsPage() {
 		trashCost,
 		setTrashCost,
 		setIsTrashCost,
-		isTrashCost
+		isTrashCost,
+		viewType,
+		setViewType
 	} = useSmetaStore()
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const navigate = useNavigate()
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
+	const inputNameRef = useRef<HTMLInputElement>(null)
+
 	const handleButtonClick = () => {
 		fileInputRef.current?.click()
 	}
+	const [searchParams] = useSearchParams()
+
+	useEffect(() => {
+		if (searchParams.get('focus') === 'true') {
+			inputNameRef.current?.focus()
+		}
+	}, [searchParams])
 
 	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
 		try {
@@ -106,6 +120,11 @@ export default function SettingsPage() {
 		}
 	}
 
+	const viewTypeOptions: SwitcherOption<ViewTypes>[] = [
+		{ id: 'QUANTITY', name: 'Цена за единицу' },
+		{ id: 'TOTAL', name: 'Общая стоимость' }
+	]
+
 	return (
 		<div className='space-y-6 max-w-md mx-auto'>
 			{/* Назад */}
@@ -143,6 +162,7 @@ export default function SettingsPage() {
 				</label>
 				<input
 					value={objectName}
+					ref={inputNameRef}
 					onChange={e => setObjectName(e.target.value)}
 					placeholder='Например: Квартира ул. Ленина 15'
 					className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
@@ -182,6 +202,15 @@ export default function SettingsPage() {
 				switchable={isDark}
 				setSwitchable={setDark}
 				title='Тёмная тема'
+			/>
+
+			<ListSwitcher
+				icons={{ dark: Eye }}
+				description=''
+				title='Режим отображения'
+				options={viewTypeOptions}
+				setValue={setViewType}
+				value={viewType}
 			/>
 
 			<Switcher

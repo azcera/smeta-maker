@@ -48,3 +48,8 @@ export interface UploadResponse {
 	}
 	error?: string
 }
+
+export type ModalMessageType = {
+	title: string
+	description: string
+}

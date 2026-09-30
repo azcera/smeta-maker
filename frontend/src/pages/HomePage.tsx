@@ -1,27 +1,13 @@
 import { Download, Plus, Settings, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { createSearchParams, Link, useNavigate } from 'react-router-dom'
 import slugify from 'slugify'
 import { generateSmeta } from '../api/smetaApi'
 import AddPlaceModal from '../components/AddPlaceModal'
+import Modal from '../components/Modal'
+import WorkItem from '../components/ui/WorksItem'
 import { useSmetaStore } from '../store/smetaStore'
-
-const UNIT_COLORS: Record<string, string> = {
-	м2: '#613435',
-	'м²': '#613435',
-	м3: '#613435',
-	'м³': '#613435',
-	комплекс: '#4B6134',
-	'м.п.': '#423461',
-	'м/п': '#423461',
-	'м.п': '#423461',
-	шт: '#615A34'
-}
-
-function getUnitColor(unit: string) {
-	const key = unit.toLowerCase().trim()
-	return UNIT_COLORS[key] || '#4B5563'
-}
+import type { ModalMessageType } from '../types'
 
 export default function HomePage() {
 	const {
@@ -31,30 +17,48 @@ export default function HomePage() {
 		trashCost,
 		isDark,
 		removePlace,
-		removeWork,
-		clearAll
+		setViewType,
+		viewType,
+		clearAll,
+		isTransportCost,
+		isTrashCost
 	} = useSmetaStore()
 
 	const navigate = useNavigate()
 	const [saving, setSaving] = useState(false)
 	const [showAddPlace, setShowAddPlace] = useState(false)
 
+	const [isErrorModal, setIsErrorModal] = useState(false)
+	const [modalMessage, setModalMessage] = useState<ModalMessageType>({
+		title: 'Ошибка',
+		description: ''
+	})
+
 	const allWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)
 
 	const total =
 		places.reduce((sum, place) => {
 			return sum + place.works.reduce((s, w) => s + w.quantity * w.price, 0)
-		}, 0) + (transportCost || 0)
+		}, 0) +
+		(isTransportCost ? transportCost : 0) +
+		(isTrashCost ? trashCost : 0)
 
 	const handleSave = async () => {
 		if (!objectName.trim()) {
-			alert('Укажите название объекта в настройках')
-			navigate('/settings')
+			setModalMessage({
+				...modalMessage,
+				description: 'Укажите название объекта в настройках'
+			})
+			setIsErrorModal(true)
 			return
 		}
 
 		if (allWorksCount === 0) {
-			alert('Добавьте хотя бы одну работу')
+			setModalMessage({
+				...modalMessage,
+				description: 'Добавьте хотя бы одну работу'
+			})
+			setIsErrorModal(true)
 			return
 		}
 
@@ -77,8 +81,9 @@ export default function HomePage() {
 			const blob = await generateSmeta({
 				object: objectName,
 				places: placesPayload,
-				transportCost: transportCost || undefined,
-				trashCost: trashCost || undefined
+				transportCost:
+					isTransportCost && transportCost != 0 ? transportCost : undefined,
+				trashCost: isTrashCost && trashCost != 0 ? trashCost : undefined
 			})
 
 			// Скачивание файла
@@ -95,7 +100,11 @@ export default function HomePage() {
 			a.click()
 			URL.revokeObjectURL(url)
 		} catch (err: any) {
-			alert(err.message || 'Ошибка при создании сметы')
+			setModalMessage({
+				...modalMessage,
+				description: err.message || 'Ошибка при создании сметы'
+			})
+			setIsErrorModal(true)
 		} finally {
 			setSaving(false)
 		}
@@ -152,47 +161,11 @@ export default function HomePage() {
 								</p>
 							) : (
 								place.works.map(work => {
-									const color = getUnitColor(work.unit)
-									const sum = work.quantity * work.price
-
 									return (
-										<div
-											key={work.id}
-											className='rounded-2xl p-4 text-white relative shadow-lg'
-											style={{ backgroundColor: color }}
-										>
-											<p className='font-medium text-[15px] leading-snug mb-3 text-center px-8'>
-												{work.name}
-											</p>
-
-											<div className='flex flex-wrap justify-center gap-2'>
-												<span className='px-2.5 py-1 rounded-lg text-xs font-medium bg-black/25'>
-													x{work.quantity}
-												</span>
-												<span className='px-2.5 py-1 rounded-lg text-xs font-medium bg-black/25'>
-													{work.unit}
-												</span>
-												<span className='px-2.5 py-1 rounded-lg text-xs font-medium bg-black/25'>
-													{sum.toLocaleString('ru-RU')} ₽
-												</span>
-											</div>
-
-											<button
-												onClick={e => {
-													e.preventDefault()
-													e.stopPropagation()
-													removeWork(place.id, work.id)
-												}}
-												className='absolute top-3 right-3 p-2 rounded-xl bg-black/20 hover:bg-black/40 transition-colors cursor-pointer z-10'
-											>
-												<Trash2 className='w-4 h-4' />
-											</button>
-
-											<Link
-												to={`/works/${place.id}/${work.id}`}
-												className='absolute inset-0 rounded-2xl z-0'
-											/>
-										</div>
+										<WorkItem
+											place={place}
+											work={work}
+										/>
 									)
 								})
 							)}
@@ -232,8 +205,15 @@ export default function HomePage() {
 			>
 				<div className='max-w-2xl mx-auto px-4 py-4'>
 					<div className='flex justify-center mb-4'>
-						<div
-							className={`px-4 py-1.5 rounded-full text-sm ${
+						<button
+							onClick={() => {
+								if (viewType === 'QUANTITY') {
+									setViewType('TOTAL')
+								} else {
+									setViewType('QUANTITY')
+								}
+							}}
+							className={`cursor-pointer px-4 py-1.5 rounded-full text-sm ${
 								isDark
 									? 'bg-neutral-800 text-neutral-300'
 									: 'bg-slate-100 text-slate-600'
@@ -245,7 +225,7 @@ export default function HomePage() {
 							>
 								{total.toLocaleString('ru-RU')} ₽
 							</span>
-						</div>
+						</button>
 					</div>
 
 					<div className='flex items-center gap-3'>
@@ -294,6 +274,30 @@ export default function HomePage() {
 			<AddPlaceModal
 				open={showAddPlace}
 				onClose={() => setShowAddPlace(false)}
+			/>
+			<Modal
+				buttons={{
+					blue: {
+						title: 'Ок',
+						onClick: () => {
+							setIsErrorModal(false)
+							navigate({
+								pathname: '/settings',
+								search: `?${createSearchParams({ focus: 'true' })}`
+							})
+						}
+					}
+				}}
+				description={modalMessage.description}
+				isOpen={isErrorModal}
+				onClose={() => {
+					setIsErrorModal(false)
+					navigate({
+						pathname: '/settings',
+						search: `?${createSearchParams({ focus: 'true' })}`
+					})
+				}}
+				title={modalMessage.title}
 			/>
 		</div>
 	)

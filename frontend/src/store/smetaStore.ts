@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Place, PlacesArray, Work } from '../types'
 
+export type ViewTypes = 'TOTAL' | 'QUANTITY'
+
 interface SmetaStore {
 	objectName: string
 	places: Place[]
@@ -11,6 +13,7 @@ interface SmetaStore {
 	isTransportCost: boolean
 	isTrashCost: boolean
 	importedTable: string | null
+	viewType: ViewTypes
 
 	setObjectName: (name: string) => void
 	setTransportCost: (value: number) => void
@@ -19,6 +22,7 @@ interface SmetaStore {
 	setImportedTable: (value: string) => void
 	setIsTransportCost: (value: boolean) => void
 	setIsTrashCost: (value: boolean) => void
+	setViewType: (value: ViewTypes) => void
 
 	addPlace: (name: string) => string // возвращает id
 	removePlace: (placeId: string) => void
@@ -42,6 +46,7 @@ export const useSmetaStore = create<SmetaStore>()(
 			isTransportCost: false,
 			isTrashCost: false,
 			importedTable: null,
+			viewType: 'TOTAL',
 
 			setObjectName: name => set({ objectName: name }),
 			setTransportCost: value => set({ transportCost: value }),
@@ -58,6 +63,12 @@ export const useSmetaStore = create<SmetaStore>()(
 				set({
 					isTrashCost: value
 				}),
+
+			setViewType(value) {
+				set({
+					viewType: value
+				})
+			},
 
 			addPlace: name => {
 				const id = crypto.randomUUID()
@@ -154,7 +165,8 @@ export const useSmetaStore = create<SmetaStore>()(
 				importedTable: state.importedTable,
 				isTransportCost: state.isTransportCost,
 				trashCost: state.trashCost,
-				isTrashCost: state.isTrashCost
+				isTrashCost: state.isTrashCost,
+				viewType: state.viewType
 			})
 		}
 	)
