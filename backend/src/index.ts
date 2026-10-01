@@ -5,9 +5,14 @@ import express, { NextFunction, Request, Response } from 'express'
 import multer from 'multer'
 import path from 'path'
 import slugify from 'slugify'
+import dotenv from 'dotenv'
+
+dotenv.config({
+	path: '../../.env'
+})
 
 const app = express()
-const PORT = 3000
+const PORT = process.env.PORT || 3000
 const LIST_TABLE = 'tula'
 
 // Подключение к SQLite
@@ -27,6 +32,14 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api', (req: Request, res: Response, next: NextFunction) => {
 	console.log(`${req.method} ${req.path}`)
 	next()
+})
+
+const frontendPath = path.join(__dirname, '../../frontend/dist')
+
+app.use(express.static(frontendPath))
+
+app.get('*', (req: Request, res: Response) => {
+	res.sendFile(path.join(frontendPath, 'index.html'))
 })
 
 // ========== Типы ==========

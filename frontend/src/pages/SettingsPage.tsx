@@ -1,3 +1,4 @@
+import dotenv from 'dotenv'
 import { ArrowLeft, Eye, Moon, Sun, Trash, Truck } from 'lucide-react'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -7,6 +8,10 @@ import ListSwitcher, {
 import Switcher from '../components/ui/Switcher'
 import { useSmetaStore, type ViewTypes } from '../store/smetaStore'
 import type { UploadResponse } from '../types'
+
+dotenv.config({
+	path: '../../../.env'
+})
 
 export default function SettingsPage() {
 	const {
@@ -59,7 +64,7 @@ export default function SettingsPage() {
 				setError(null)
 
 				formData.append('excel_file', e.target.files[0])
-				const response = await fetch('http://localhost:3000/api/upload-smeta', {
+				const response = await fetch(`${process.env.API_URL}/upload-smeta`, {
 					method: 'POST',
 					body: formData
 				})
