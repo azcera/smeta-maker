@@ -59,7 +59,7 @@ export default function SettingsPage() {
 				setError(null)
 
 				formData.append('excel_file', e.target.files[0])
-				const response = await fetch('http://localhost:3000/api/upload-smeta', {
+				const response = await fetch('/api/upload-smeta', {
 					method: 'POST',
 					body: formData
 				})
@@ -90,6 +90,8 @@ export default function SettingsPage() {
 			}
 		} catch (err: any) {
 			setError(err.message || 'Произошла неизвестная ошибка')
+		} finally {
+			setLoading(false)
 		}
 	}
 
@@ -184,16 +186,20 @@ export default function SettingsPage() {
 				/>
 				<button
 					onClick={handleButtonClick}
+					disabled={loading}
 					className={`w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
 						isDark
 							? 'border-neutral-700 text-neutral-400 hover:bg-neutral-900'
 							: 'border-slate-300 text-slate-500 hover:bg-slate-50'
 					}`}
 				>
-					{!importedTable
+					{loading
+						? 'Загрузка...'
+						: !importedTable
 						? 'Импортировать таблицу'
 						: `Загруженная таблица: ${importedTable}`}
 				</button>
+				{error && <p role='alert' className='mt-2 text-sm text-red-500'>{error}</p>}
 			</div>
 
 			<Switcher

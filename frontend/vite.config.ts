@@ -4,5 +4,14 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-	plugins: [react(), tailwindcss()]
+plugins: [react(), tailwindcss()],
+server: {
+host: '0.0.0.0',
+port: 5000,
+strictPort: true,
+allowedHosts: true,
+proxy: {
+'/api': 'http://127.0.0.1:3000'
+}
+}
 })
