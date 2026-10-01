@@ -1,7 +1,7 @@
-import dotenv from 'dotenv'
 import { ArrowLeft, Eye, Moon, Sun, Trash, Truck } from 'lucide-react'
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import Modal from '../components/Modal'
 import ListSwitcher, {
 	type SwitcherOption
 } from '../components/ui/ListSwitcher'
@@ -9,9 +9,7 @@ import Switcher from '../components/ui/Switcher'
 import { useSmetaStore, type ViewTypes } from '../store/smetaStore'
 import type { UploadResponse } from '../types'
 
-dotenv.config({
-	path: '../../../.env'
-})
+const API_URL = import.meta.env.VITE_API_URL
 
 export default function SettingsPage() {
 	const {
@@ -33,8 +31,8 @@ export default function SettingsPage() {
 		viewType,
 		setViewType
 	} = useSmetaStore()
-	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [isModalOpen, setIsModalOpen] = useState(false)
 	const navigate = useNavigate()
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -51,6 +49,11 @@ export default function SettingsPage() {
 		}
 	}, [searchParams])
 
+	useEffect(() => {
+		if (error) {
+		}
+	}, [error])
+
 	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
 		try {
 			if (e.target.files && e.target.files.length > 0) {
@@ -60,11 +63,10 @@ export default function SettingsPage() {
 					return
 				}
 
-				setLoading(true)
 				setError(null)
 
 				formData.append('excel_file', e.target.files[0])
-				const response = await fetch(`${process.env.API_URL}/upload-smeta`, {
+				const response = await fetch(`${API_URL}/upload-smeta`, {
 					method: 'POST',
 					body: formData
 				})
@@ -172,8 +174,8 @@ export default function SettingsPage() {
 					placeholder='Например: Квартира ул. Ленина 15'
 					className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
 						isDark
-							? 'bg-neutral-800 border border-neutral-700 text-white placeholder:text-neutral-500'
-							: 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400'
+							? 'bg-neutral-800 border border-neutral-700 text-white '
+							: 'bg-slate-50 border border-slate-200 text-slate-900 '
 					}`}
 				/>
 			</div>
@@ -242,6 +244,18 @@ export default function SettingsPage() {
 				title='Вынос мусора'
 				inputValue={trashCost.toString()}
 				onInputChange={e => handleCostChange(e, setTrashCost)}
+			/>
+			<Modal
+				title='Ошибка'
+				buttons={{
+					blue: {
+						onClick: () => setIsModalOpen(false),
+						title: 'Ок'
+					}
+				}}
+				onClose={() => setIsModalOpen(false)}
+				description={error as string}
+				isOpen={isModalOpen}
 			/>
 		</div>
 	)

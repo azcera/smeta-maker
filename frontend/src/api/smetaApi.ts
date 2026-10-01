@@ -1,12 +1,6 @@
 import type { DbWork, NormalizedWork } from '../types'
 
-import dotenv from 'dotenv'
-
-dotenv.config({
-	path: '../../../.env'
-})
-
-const API_URL = process.env.API_URL
+const API_URL = import.meta.env.VITE_API_URL
 
 /** Получить все работы из БД */
 export async function fetchWorks(): Promise<DbWork[]> {

@@ -1,11 +1,11 @@
 import Database from 'better-sqlite3'
 import cors from 'cors'
+import dotenv from 'dotenv'
 import ExcelJS from 'exceljs'
 import express, { NextFunction, Request, Response } from 'express'
 import multer from 'multer'
 import path from 'path'
 import slugify from 'slugify'
-import dotenv from 'dotenv'
 
 dotenv.config({
 	path: '../../.env'
@@ -38,7 +38,7 @@ const frontendPath = path.join(__dirname, '../../frontend/dist')
 
 app.use(express.static(frontendPath))
 
-app.get('*', (req: Request, res: Response) => {
+app.get('*any', (req: Request, res: Response) => {
 	res.sendFile(path.join(frontendPath, 'index.html'))
 })
 
