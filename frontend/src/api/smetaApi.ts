@@ -1,6 +1,7 @@
 import type { DbWork, NormalizedWork } from '../types'
 
-const API_URL = '/api'
+const API_URL = import.meta.env.VITE_API_URL
+
 
 /** Получить все работы из БД */
 export async function fetchWorks(): Promise<DbWork[]> {
