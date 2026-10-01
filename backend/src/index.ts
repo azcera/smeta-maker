@@ -34,18 +34,18 @@ app.use('/api', (req: Request, res: Response, next: NextFunction) => {
 	next()
 })
 
-const frontendPath = path.join(__dirname, '../../frontend/dist')
-
-app.use(express.static(frontendPath))
-
-app.get('*any', (req: Request, res: Response, next: NextFunction) => {
-	// Если запрос начинается с /api, то Express должен передать его дальше вашим роутам бэкенда
-	if (req.path.startsWith('/api')) {
-		return next()
-	}
-	// Во всех остальных случаях отдаем фронтенд
-	res.sendFile(path.join(frontendPath, 'index.html'))
-})
+if (process.env.NODE_ENV !== 'development') {
+	const frontendPath = path.join(__dirname, '../../frontend/dist')
+	app.use(express.static(frontendPath))
+	app.get('*any', (req: Request, res: Response, next: NextFunction) => {
+		// Если запрос начинается с /api, то Express должен передать его дальше вашим роутам бэкенда
+		if (req.path.startsWith('/api')) {
+			return next()
+		}
+		// Во всех остальных случаях отдаем фронтенд
+		res.sendFile(path.join(frontendPath, 'index.html'))
+	})
+}
 
 // ========== Типы ==========
 

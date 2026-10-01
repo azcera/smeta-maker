@@ -1,5 +1,5 @@
 import { Download, Plus, Settings, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createSearchParams, Link, useNavigate } from 'react-router-dom'
 import slugify from 'slugify'
 import { generateSmeta } from '../api/smetaApi'
@@ -29,6 +29,7 @@ export default function HomePage() {
 	const [showAddPlace, setShowAddPlace] = useState(false)
 
 	const [isErrorModal, setIsErrorModal] = useState(false)
+	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const [modalMessage, setModalMessage] = useState<ModalMessageType>({
 		title: 'Ошибка',
 		description: ''
@@ -109,6 +110,10 @@ export default function HomePage() {
 			setSaving(false)
 		}
 	}
+
+	useEffect(() => {
+		document.title = 'Создатель смет'
+	}, [])
 
 	return (
 		<div className='pb-40'>
@@ -231,8 +236,8 @@ export default function HomePage() {
 					<div className='flex items-center gap-3'>
 						<button
 							onClick={() => {
-								if (allWorksCount > 0 && confirm('Удалить все данные?'))
-									clearAll()
+								if (allWorksCount > 0 || objectName.length > 0)
+									setIsDeleteModal(true)
 							}}
 							className='h-12 px-4 rounded-2xl bg-red-500/90 hover:bg-red-500 flex items-center justify-center transition-colors cursor-pointer shrink-0'
 						>
@@ -298,6 +303,26 @@ export default function HomePage() {
 					})
 				}}
 				title={modalMessage.title}
+			/>
+
+			<Modal
+				isOpen={isDeleteModal}
+				onClose={() => setIsDeleteModal(false)}
+				description='Выберите действие'
+				title='Уверены, что хотите очистить данные?'
+				buttons={{
+					grey: {
+						title: 'Нет',
+						onClick: () => setIsDeleteModal(false)
+					},
+					blue: {
+						title: 'Удалить',
+						onClick: () => {
+							clearAll()
+							setIsDeleteModal(false)
+						}
+					}
+				}}
 			/>
 		</div>
 	)

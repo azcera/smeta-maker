@@ -85,6 +85,16 @@ export default function EditWorkPage() {
 	}, [existing])
 
 	useEffect(() => {
+		let title = 'Создатель смет'
+		if (existing) {
+			title += ' | Редактирование работы'
+		} else {
+			title += ' | Новая работа'
+		}
+		document.title = title
+	}, [])
+
+	useEffect(() => {
 		if (step === 'form') {
 			// Небольшая задержка, чтобы поле успело отрендериться
 			setTimeout(() => {

@@ -153,7 +153,16 @@ export const useSmetaStore = create<SmetaStore>()(
 					importedTable: null
 				})),
 
-			clearAll: () => set({ places: [], transportCost: 0, importedTable: null })
+			clearAll: () =>
+				set({
+					places: [],
+					transportCost: 0,
+					trashCost: 0,
+					isTransportCost: false,
+					isTrashCost: false,
+					objectName: '',
+					importedTable: null
+				})
 		}),
 		{
 			name: 'smeta-storage',
