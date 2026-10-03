@@ -5,7 +5,8 @@
 			"root": "backend",
 			"framework": "express",
 			"entrypoint": "vercel-entry.js",
-			"buildCommand": "npm run build"
+			"buildCommand": "npm run build",
+			"includeFiles": ["resource/**", "dist/resource/**"]
 		},
 		"frontend": {
 			"root": "frontend",

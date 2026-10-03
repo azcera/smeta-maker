@@ -3,6 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import ExcelJS from 'exceljs'
 import express, { NextFunction, Request, Response } from 'express'
+import fs from 'fs'
 import multer from 'multer'
 import path from 'path'
 import slugify from 'slugify'
@@ -128,6 +129,25 @@ function setBorderRange(
 	}
 }
 
+function getTemplatePath(): string {
+	const candidates = [
+		// после build: dist/resource/...
+		path.join(__dirname, 'resource/templates/template.xlsx'),
+		// локально / иногда на Vercel: рядом с backend
+		path.join(process.cwd(), 'resource/templates/template.xlsx'),
+		// старый путь (на всякий случай)
+		path.join(__dirname, '../resource/templates/template.xlsx')
+	]
+
+	for (const p of candidates) {
+		if (fs.existsSync(p)) return p
+	}
+
+	throw new Error(
+		`Файл шаблона не найден. Проверены пути:\n${candidates.join('\n')}`
+	)
+}
+
 // colors
 const lightBlueColor = '95B3D7'
 const whiteColor = 'FFFFFF'
@@ -154,9 +174,7 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 
 		// Загружаем шаблон
 		const workbook = new ExcelJS.Workbook()
-		await workbook.xlsx.readFile(
-			path.join(__dirname, '../resource/templates/template.xlsx')
-		)
+		await workbook.xlsx.readFile(getTemplatePath())
 
 		const sheet = workbook.getWorksheet(1)
 		if (!sheet) {
