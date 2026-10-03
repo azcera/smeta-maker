@@ -434,6 +434,10 @@ app.post(
 )
 
 // ========== Запуск ==========
-app.listen(PORT, () => {
-	console.log(`Сервер запущен на http://localhost:${PORT}`)
-})
+if (process.env.NODE_ENV !== 'production') {
+	app.listen(PORT, () => {
+		console.log(`Сервер запущен на http://localhost:${PORT}`)
+	})
+}
+
+export default app
