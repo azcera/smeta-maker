@@ -104,13 +104,13 @@ export default function EditWorkPage() {
 			const input = nameInputRef.current
 			if (!input) return
 
-			// --- iOS хак ---
-			input.setAttribute('readonly', 'true')
 			input.focus()
-			input.removeAttribute('readonly')
 
-			input.click()
-		}, 300) // попробуй 300–500
+			// Принудительно ставим каретку
+			setTimeout(() => {
+				input.setSelectionRange(0, 0)
+			}, 10)
+		}, 350)
 
 		return () => clearTimeout(timer)
 	}, [step, loading])
