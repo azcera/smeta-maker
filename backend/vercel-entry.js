@@ -1,3 +1,3 @@
 const app = require('./dist/index.js')
 
-export default app
+export default app.default || app

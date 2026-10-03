@@ -1,5 +1,5 @@
 {
-	"$schema": "https://vercel.sh",
+	"$schema": "https://openapi.vercel.sh/vercel.json",
 	"services": {
 		"backend": {
 			"root": "backend",
@@ -20,7 +20,7 @@
 			"source": "/api/(.*)",
 			"destination": {
 				"service": "backend",
-				"path": "/api/$1"
+				"path": "/$1"
 			}
 		},
 		{
