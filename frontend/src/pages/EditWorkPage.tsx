@@ -84,7 +84,11 @@ export default function EditWorkPage() {
 		}
 	}, [existing])
 
+	const nameInputRef = useRef<HTMLInputElement>(null)
+
 	useEffect(() => {
+		// focus code
+		nameInputRef.current?.focus()
 		let title = 'Создатель смет'
 		if (existing) {
 			title += ' | Редактирование работы'
@@ -188,7 +192,7 @@ export default function EditWorkPage() {
 							onChange={e => setQuery(e.target.value)}
 							placeholder='Начните вводить название...'
 							className={`${inputClass} pl-11`}
-							autoFocus
+							ref={nameInputRef}
 						/>
 					</div>
 
