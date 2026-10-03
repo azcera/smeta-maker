@@ -88,7 +88,9 @@ export default function EditWorkPage() {
 
 	useEffect(() => {
 		// focus code
-		nameInputRef.current?.focus()
+		const timer = setTimeout(() => {
+			nameInputRef.current?.focus()
+		}, 100)
 		let title = 'Создатель смет'
 		if (existing) {
 			title += ' | Редактирование работы'
@@ -96,6 +98,7 @@ export default function EditWorkPage() {
 			title += ' | Новая работа'
 		}
 		document.title = title
+		return () => clearTimeout(timer)
 	}, [])
 
 	useEffect(() => {
