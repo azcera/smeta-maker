@@ -7,6 +7,7 @@ import fs from 'fs'
 import multer from 'multer'
 import path from 'path'
 import slugify from 'slugify'
+import { TEMPLATE_BASE64 } from './templateBase64'
 
 dotenv.config({
 	path: '../../.env'
@@ -109,25 +110,6 @@ function changeRowColor(row: ExcelJS.Row, color: string) {
 	}
 }
 
-function loadTemplateBuffer(): Buffer {
-	const candidates = [
-		path.join(process.cwd(), 'resource/templates/template.xlsx'),
-		path.join(__dirname, '../resource/templates/template.xlsx'),
-		path.join(__dirname, 'resource/templates/template.xlsx'),
-		path.join(process.cwd(), 'backend/resource/templates/template.xlsx')
-	]
-
-	for (const p of candidates) {
-		if (fs.existsSync(p)) {
-			return fs.readFileSync(p)
-		}
-	}
-
-	throw new Error(
-		`template.xlsx не найден. Проверены:\n${candidates.join('\n')}`
-	)
-}
-
 function setBorderRange(
 	sheet: ExcelJS.Worksheet,
 	startRow: number,
@@ -173,9 +155,8 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 			throw new Error('Добавляемые работы невозможно обработать')
 
 		// Загружаем шаблон
-		const templateBuffer = loadTemplateBuffer()
 		const workbook = new ExcelJS.Workbook()
-		await workbook.xlsx.load(templateBuffer as any)
+		await workbook.xlsx.load(Buffer.from(TEMPLATE_BASE64, 'base64') as any)
 
 		const sheet = workbook.getWorksheet(1)
 		if (!sheet) {

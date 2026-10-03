@@ -13,11 +13,6 @@
 			"buildCommand": "npm run build"
 		}
 	},
-	"functions": {
-		"backend/vercel-entry.js": {
-			"includeFiles": "backend/resource/**"
-		}
-	},
 	"rewrites": [
 		{
 			"source": "/api/(.*)",
