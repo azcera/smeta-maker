@@ -101,8 +101,16 @@ export default function EditWorkPage() {
 		if (step !== 'search' || loading) return
 
 		const timer = setTimeout(() => {
-			nameInputRef.current?.focus()
-		}, 150) // 100–200 мс обычно достаточно
+			const input = nameInputRef.current
+			if (!input) return
+
+			// --- iOS хак ---
+			input.setAttribute('readonly', 'true')
+			input.focus()
+			input.removeAttribute('readonly')
+
+			input.click()
+		}, 300) // попробуй 300–500
 
 		return () => clearTimeout(timer)
 	}, [step, loading])
