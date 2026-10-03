@@ -98,10 +98,14 @@ export default function EditWorkPage() {
 	}, [])
 
 	useEffect(() => {
-		if (loading === false) {
+		if (step !== 'search' || loading) return
+
+		const timer = setTimeout(() => {
 			nameInputRef.current?.focus()
-		}
-	}, [loading])
+		}, 150) // 100–200 мс обычно достаточно
+
+		return () => clearTimeout(timer)
+	}, [step, loading])
 
 	useEffect(() => {
 		if (step === 'form') {
@@ -150,7 +154,7 @@ export default function EditWorkPage() {
 		navigate('/')
 	}
 
-	const inputClass = `w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+	const inputClass = `w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
 		isDark
 			? 'bg-neutral-900 border border-neutral-700 text-white placeholder:text-neutral-500'
 			: 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400'
