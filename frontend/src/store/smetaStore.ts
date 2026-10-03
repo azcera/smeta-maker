@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Place, PlacesArray, Work } from '../types'
+import { fetchWorks, normalizeDbWork } from '../api/smetaApi'
+import type { NormalizedWork, Place, PlacesArray, Work } from '../types'
 
 export type ViewTypes = 'TOTAL' | 'QUANTITY'
 
@@ -14,7 +15,10 @@ interface SmetaStore {
 	isTrashCost: boolean
 	importedTable: string | null
 	viewType: ViewTypes
+	dbWorks: NormalizedWork[]
+	dbWorksLoaded: boolean
 
+	loadDbWorks: () => Promise<void>
 	setObjectName: (name: string) => void
 	setTransportCost: (value: number) => void
 	setTrashCost: (value: number) => void
@@ -37,7 +41,7 @@ interface SmetaStore {
 
 export const useSmetaStore = create<SmetaStore>()(
 	persist(
-		set => ({
+		(set, get) => ({
 			objectName: '',
 			places: [],
 			transportCost: 10000,
@@ -47,7 +51,23 @@ export const useSmetaStore = create<SmetaStore>()(
 			isTrashCost: false,
 			importedTable: null,
 			viewType: 'TOTAL',
+			dbWorks: [],
+			dbWorksLoaded: false,
 
+			loadDbWorks: async () => {
+				if (get().dbWorksLoaded) return // уже загружено — выходим
+
+				try {
+					const raw = await fetchWorks()
+					const normalized = raw.map(normalizeDbWork)
+					set({
+						dbWorks: normalized,
+						dbWorksLoaded: true
+					})
+				} catch (err) {
+					console.error('Не удалось загрузить базу работ', err)
+				}
+			},
 			setObjectName: name => set({ objectName: name }),
 			setTransportCost: value => set({ transportCost: value }),
 			setTrashCost: value => set({ trashCost: value }),
@@ -164,6 +184,7 @@ export const useSmetaStore = create<SmetaStore>()(
 					importedTable: null
 				})
 		}),
+
 		{
 			name: 'smeta-storage',
 			partialize: state => ({
@@ -175,7 +196,9 @@ export const useSmetaStore = create<SmetaStore>()(
 				isTransportCost: state.isTransportCost,
 				trashCost: state.trashCost,
 				isTrashCost: state.isTrashCost,
-				viewType: state.viewType
+				viewType: state.viewType,
+				dbWorks: state.dbWorks,
+				dbWorksLoaded: state.dbWorksLoaded
 			})
 		}
 	)

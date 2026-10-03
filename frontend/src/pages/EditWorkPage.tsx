@@ -1,7 +1,6 @@
 import { ArrowLeft, Save, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { fetchWorks, normalizeDbWork } from '../api/smetaApi'
 import Modal from '../components/Modal'
 import { useSmetaStore } from '../store/smetaStore'
 import type { ModalMessageType, NormalizedWork } from '../types'
@@ -10,7 +9,8 @@ export default function EditWorkPage() {
 	const { placeId: paramPlaceId, id } = useParams()
 	const [searchParams] = useSearchParams()
 	const navigate = useNavigate()
-	const { places, addWork, updateWork, isDark } = useSmetaStore()
+	const { places, addWork, updateWork, isDark, dbWorks, dbWorksLoaded } =
+		useSmetaStore()
 	const quantityRef = useRef<HTMLInputElement>(null)
 
 	const placeIdFromQuery = searchParams.get('placeId')
@@ -31,7 +31,6 @@ export default function EditWorkPage() {
 	const [price, setPrice] = useState(0)
 	const [fromDb, setFromDb] = useState(false)
 
-	const [dbWorks, setDbWorks] = useState<NormalizedWork[]>([])
 	const [units, setUnits] = useState<string[]>([
 		'м²',
 		'м³',
@@ -55,12 +54,8 @@ export default function EditWorkPage() {
 			try {
 				setLoading(true)
 				setError('')
-				const raw = await fetchWorks()
-				const normalized = raw.map(normalizeDbWork)
-				setDbWorks(normalized)
-
 				let uniqueUnits = Array.from(
-					new Set(normalized.map(w => w.unit).filter(Boolean))
+					new Set(dbWorks.map(w => w.unit).filter(Boolean))
 				).sort()
 				uniqueUnits.push('комплекс')
 				if (uniqueUnits.length > 0) setUnits(uniqueUnits)
@@ -98,22 +93,14 @@ export default function EditWorkPage() {
 	}, [])
 
 	useEffect(() => {
-		if (step !== 'search' || loading) return
+		if (step !== 'search' || !dbWorksLoaded) return
 
 		const timer = setTimeout(() => {
-			const input = nameInputRef.current
-			if (!input) return
-
-			input.focus()
-
-			// Принудительно ставим каретку
-			setTimeout(() => {
-				input.setSelectionRange(0, 0)
-			}, 10)
-		}, 350)
+			nameInputRef.current?.focus()
+		}, 150)
 
 		return () => clearTimeout(timer)
-	}, [step, loading])
+	}, [step, dbWorksLoaded])
 
 	useEffect(() => {
 		if (step === 'form') {
