@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3'
+import { createClient } from '@supabase/supabase-js'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import ExcelJS from 'exceljs'
@@ -15,10 +15,18 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const LIST_TABLE = 'tula'
 
-// Подключение к SQLite
-const db = new Database(
-	path.join(__dirname, '../resource/databases/regionru.db')
-)
+// ========== Supabase ==========
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey =
+	process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+
+if (!supabaseUrl || !supabaseKey) {
+	throw new Error(
+		'Не заданы SUPABASE_URL и SUPABASE_SERVICE_ROLE_KEY (или SUPABASE_ANON_KEY)'
+	)
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey)
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
@@ -38,11 +46,9 @@ if (process.env.NODE_ENV !== 'development') {
 	const frontendPath = path.join(__dirname, '../../frontend/dist')
 	app.use(express.static(frontendPath))
 	app.get('*any', (req: Request, res: Response, next: NextFunction) => {
-		// Если запрос начинается с /api, то Express должен передать его дальше вашим роутам бэкенда
 		if (req.path.startsWith('/api')) {
 			return next()
 		}
-		// Во всех остальных случаях отдаем фронтенд
 		res.sendFile(path.join(frontendPath, 'index.html'))
 	})
 }
@@ -67,25 +73,28 @@ interface GenerateSmetaBody {
 
 // ========== Получение списка ==========
 
-app.get('/api/list', (req: Request, res: Response) => {
+app.get('/api/list', async (req: Request, res: Response) => {
 	try {
 		const { category, id } = req.query
-		let sql = `SELECT * FROM ${LIST_TABLE}`
-		const params: (string | number)[] = []
 
-		if (!id && category) {
-			sql += ' WHERE LOWER(kategor) LIKE LOWER(?)'
-			params.push(`%${category}%`)
-		}
+		let query = supabase.from(LIST_TABLE).select('*')
 
 		if (id) {
-			sql += ' WHERE _id = ?'
-			params.push(Number(id))
+			query = query.eq('_id', Number(id))
+		} else if (category) {
+			// ilike — регистронезависимый поиск (аналог LOWER(...) LIKE LOWER(...))
+			query = query.ilike('kategor', `%${category}%`)
 		}
 
-		const list = db.prepare(sql).all(...params)
-		res.json(list)
+		const { data: list, error } = await query
+
+		if (error) {
+			throw error
+		}
+
+		res.json(list ?? [])
 	} catch (err: any) {
+		console.error(err)
 		res.status(500).json({ error: err.message })
 	}
 })
