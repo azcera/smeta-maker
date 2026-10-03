@@ -3,9 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import ExcelJS from 'exceljs'
 import express, { NextFunction, Request, Response } from 'express'
-import fs from 'fs'
 import multer from 'multer'
-import path from 'path'
 import slugify from 'slugify'
 import { TEMPLATE_BASE64 } from './templateBase64'
 
@@ -38,17 +36,6 @@ app.use('/api', (req: Request, res: Response, next: NextFunction) => {
 	console.log(`${req.method} ${req.path}`)
 	next()
 })
-
-if (process.env.NODE_ENV !== 'development') {
-	const frontendPath = path.join(__dirname, '../../frontend/dist')
-	app.use(express.static(frontendPath))
-	app.get('*any', (req: Request, res: Response, next: NextFunction) => {
-		if (req.path.startsWith('/api')) {
-			return next()
-		}
-		res.sendFile(path.join(frontendPath, 'index.html'))
-	})
-}
 
 // ========== Типы ==========
 
