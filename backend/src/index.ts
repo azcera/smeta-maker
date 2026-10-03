@@ -109,6 +109,25 @@ function changeRowColor(row: ExcelJS.Row, color: string) {
 	}
 }
 
+function loadTemplateBuffer(): Buffer {
+	const candidates = [
+		path.join(process.cwd(), 'resource/templates/template.xlsx'),
+		path.join(__dirname, '../resource/templates/template.xlsx'),
+		path.join(__dirname, 'resource/templates/template.xlsx'),
+		path.join(process.cwd(), 'backend/resource/templates/template.xlsx')
+	]
+
+	for (const p of candidates) {
+		if (fs.existsSync(p)) {
+			return fs.readFileSync(p)
+		}
+	}
+
+	throw new Error(
+		`template.xlsx не найден. Проверены:\n${candidates.join('\n')}`
+	)
+}
+
 function setBorderRange(
 	sheet: ExcelJS.Worksheet,
 	startRow: number,
@@ -127,25 +146,6 @@ function setBorderRange(
 			}
 		}
 	}
-}
-
-function getTemplatePath(): string {
-	const candidates = [
-		// после build: dist/resource/...
-		path.join(__dirname, 'resource/templates/template.xlsx'),
-		// локально / иногда на Vercel: рядом с backend
-		path.join(process.cwd(), 'resource/templates/template.xlsx'),
-		// старый путь (на всякий случай)
-		path.join(__dirname, '../resource/templates/template.xlsx')
-	]
-
-	for (const p of candidates) {
-		if (fs.existsSync(p)) return p
-	}
-
-	throw new Error(
-		`Файл шаблона не найден. Проверены пути:\n${candidates.join('\n')}`
-	)
 }
 
 // colors
@@ -173,8 +173,9 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 			throw new Error('Добавляемые работы невозможно обработать')
 
 		// Загружаем шаблон
+		const templateBuffer = loadTemplateBuffer()
 		const workbook = new ExcelJS.Workbook()
-		await workbook.xlsx.readFile(getTemplatePath())
+		await workbook.xlsx.load(templateBuffer as any)
 
 		const sheet = workbook.getWorksheet(1)
 		if (!sheet) {
