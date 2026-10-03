@@ -18,15 +18,10 @@ const LIST_TABLE = 'tula'
 // ========== Supabase ==========
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey =
-	process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+	process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_PUBLISHABLE_KEY
 
-if (!supabaseUrl || !supabaseKey) {
-	throw new Error(
-		'Не заданы SUPABASE_URL и SUPABASE_SERVICE_ROLE_KEY (или SUPABASE_ANON_KEY)'
-	)
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabase =
+	supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
@@ -76,7 +71,11 @@ interface GenerateSmetaBody {
 app.get('/api/list', async (req: Request, res: Response) => {
 	try {
 		const { category, id } = req.query
-
+		if (!supabase) {
+			return res.status(500).json({
+				error: 'Supabase не настроен: задайте SUPABASE_URL и ключ в Vercel'
+			})
+		}
 		let query = supabase.from(LIST_TABLE).select('*')
 
 		if (id) {
