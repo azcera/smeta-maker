@@ -36,7 +36,7 @@ author = 62341632
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run build:frontend"
+args = "npm run build:all"
 
 [[workflows.workflow]]
 name = "setup"
@@ -47,6 +47,15 @@ author = 62341632
 task = "shell.exec"
 args = "npm run setup"
 
+[[workflows.workflow]]
+name = "run"
+mode = "sequential"
+author = 62341632
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run start"
+
 [[ports]]
 localPort = 3000
 externalPort = 3000
@@ -54,3 +63,7 @@ externalPort = 3000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[deployment]
+run = "npm start"
+build = "npm run build:all"
