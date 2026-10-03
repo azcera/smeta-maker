@@ -1,4 +1,0 @@
-{
-	"build_command": "npm run setup && npm run build:all",
-	"start_command": "node backend/dist/index.js"
-}
