@@ -336,6 +336,8 @@ export default function EditWorkPage() {
 							ref={quantityRef}
 							disabled={unit === 'комплекс'}
 							type='number'
+							inputMode='decimal'
+							pattern='[0-9]*[.,]?[0-9]*'
 							min='0'
 							step='any'
 							value={quantity || ''}
@@ -356,6 +358,8 @@ export default function EditWorkPage() {
 						</label>
 						<input
 							type='number'
+							inputMode='decimal'
+							pattern='[0-9]*[.,]?[0-9]*'
 							min='0'
 							step='any'
 							value={price || ''}
