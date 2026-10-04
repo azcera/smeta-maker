@@ -31,6 +31,7 @@ export function WorkSearchStep({
 	nameInputRef
 }: WorkSearchStepProps) {
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true)
+	const [isInputFocused, setIsInputFocused] = useState(false)
 	const lastScrollY = useRef(0)
 
 	const inputClass = `w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
@@ -40,6 +41,8 @@ export function WorkSearchStep({
 	}`
 
 	const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+		if (isInputFocused) return
+
 		const currentScrollY = e.currentTarget.scrollTop
 		const maxScroll =
 			e.currentTarget.scrollHeight - e.currentTarget.clientHeight
@@ -59,13 +62,20 @@ export function WorkSearchStep({
 
 	return (
 		<div className='max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full bg-neutral-950'>
+			{/* ШАПКА: Перевели на fixed top-0 left-0. Теперь она приколочена к верху экрана экрана намертво */}
 			<div
-				className={`bg-neutral-950 sticky top-0 z-10 px-4 space-y-4 transition-all duration-300 ease-in-out shrink-0 overflow-hidden ${
-					isHeaderVisible
-						? 'max-h-62.5 opacity-100 pb-4'
-						: 'max-h-0 opacity-0 pointer-events-none pb-0'
+				className={`bg-neutral-950 fixed top-0 left-0 right-0 z-20 px-4 pb-4 space-y-4 max-w-md mx-auto ${
+					isInputFocused
+						? 'translate-y-0 opacity-100 transition-none'
+						: 'transition-transform duration-300 ease-in-out'
+				} ${
+					!isInputFocused && !isHeaderVisible
+						? '-translate-y-full opacity-0 pointer-events-none'
+						: 'translate-y-0 opacity-100'
 				}`}
-				style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+				style={{
+					paddingTop: 'calc(1rem + env(safe-area-inset-top))'
+				}}
 			>
 				<div className='flex items-center gap-3'>
 					<button
@@ -96,6 +106,13 @@ export function WorkSearchStep({
 						placeholder='Начните вводить название...'
 						className={`${inputClass} pl-11`}
 						ref={nameInputRef}
+						onFocus={() => {
+							setIsHeaderVisible(true)
+							setIsInputFocused(true)
+							window.scrollTo(0, 0)
+							document.body.scrollTop = 0
+						}}
+						onBlur={() => setIsInputFocused(false)}
 					/>
 				</div>
 
@@ -109,14 +126,17 @@ export function WorkSearchStep({
 
 			<div
 				onScroll={handleScroll}
-				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-2 pb-6 px-4 min-h-0'
+				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-2 pb-6 min-h-0'
+				style={{
+					paddingTop: 'calc(120px + 1rem + env(safe-area-inset-top))'
+				}}
 			>
 				{query.length > 1 &&
 					!loading &&
 					filteredWorks.length > 0 &&
 					filteredWorks.slice(0, 50).map(item => (
 						<SearchComponent
-							key={item.id}
+							key={item.id || item.name}
 							item={item}
 							onSelectWork={onSelectWork}
 						/>
