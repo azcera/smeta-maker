@@ -66,7 +66,6 @@ export default function HomePage() {
 		try {
 			setSaving(true)
 
-			// Собираем данные в формат, который ждёт бэкенд
 			const placesPayload: Record<string, any[]> = {}
 			places.forEach(place => {
 				if (place.works.length > 0) {
@@ -87,17 +86,51 @@ export default function HomePage() {
 				trashCost: isTrashCost && trashCost != 0 ? trashCost : undefined
 			})
 
-			// Скачивание файла
-			const url = URL.createObjectURL(blob)
-			const a = document.createElement('a')
-			a.href = url
-
 			const safeName = slugify(objectName, {
 				lower: true,
 				replacement: '_',
 				locale: 'ru'
 			}).substring(0, 40)
-			a.download = `smeta_${safeName || 'document'}.xlsx`
+
+			const fileName = `smeta_${safeName || 'document'}.xlsx`
+			const file = new File([blob], fileName, {
+				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			})
+
+			// Проверяем, мобильное ли устройство + есть ли Web Share API с поддержкой файлов
+			const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(
+				navigator.userAgent
+			)
+			const canShare =
+				isMobile &&
+				typeof navigator.share === 'function' &&
+				typeof navigator.canShare === 'function' &&
+				navigator.canShare({ files: [file] })
+
+			if (canShare) {
+				try {
+					await navigator.share({
+						files: [file],
+						title: 'Смета',
+						text: `Смета по объекту «${objectName}»`
+					})
+					// Пользователь успешно поделился — ничего больше не делаем
+					return
+				} catch (shareErr: any) {
+					// Пользователь отменил share или произошла ошибка → падаем на скачивание
+					if (shareErr.name === 'AbortError') {
+						// просто отмена — можно ничего не делать или тоже скачать
+						return
+					}
+					// иначе продолжаем к обычному скачиванию
+				}
+			}
+
+			// Обычное скачивание (десктоп или если Share не сработал)
+			const url = URL.createObjectURL(blob)
+			const a = document.createElement('a')
+			a.href = url
+			a.download = fileName
 			a.click()
 			URL.revokeObjectURL(url)
 		} catch (err: any) {
