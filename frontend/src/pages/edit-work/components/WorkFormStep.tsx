@@ -1,5 +1,5 @@
 import { ArrowLeft, Save } from 'lucide-react'
-import React from 'react'
+import type { RefObject, SubmitEvent } from 'react'
 
 interface WorkFormStepProps {
 	isNew: boolean
@@ -16,9 +16,9 @@ interface WorkFormStepProps {
 	setPrice: (val: number) => void
 	tempQuantity: number
 	setTempQuantity: (val: number) => void
-	quantityRef: React.RefObject<HTMLInputElement | null>
+	quantityRef: RefObject<HTMLInputElement | null>
 	onBack: () => void
-	onSubmit: (e: React.FormEvent) => void
+	onSubmit: (e: SubmitEvent) => void
 }
 
 export function WorkFormStep({

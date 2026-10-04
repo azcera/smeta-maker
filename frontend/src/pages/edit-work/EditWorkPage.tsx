@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Modal from '../../components/Modal'
 import { useSmetaStore } from '../../store/smetaStore'
@@ -123,8 +123,20 @@ export default function EditWorkPage() {
 		setStep('form')
 	}
 
+	useEffect(() => {
+		if (step === 'search') {
+			document.body.style.overflow = 'hidden'
+		} else {
+			document.body.style.overflow = ''
+		}
+
+		return () => {
+			document.body.style.overflow = ''
+		}
+	}, [step])
+
 	// ИСПРАВЛЕНО: Раньше стоял тип React.ChangeEvent, что приводило к ошибкам типов на форме
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = (e: SubmitEvent) => {
 		e.preventDefault()
 		if (!name.trim()) {
 			setModalMessage({ title: 'Ошибка', description: 'Введите название' })

@@ -2,7 +2,6 @@ import { Eye, EyeClosed, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import Modal from '../../../components/Modal'
 import PlaceModal from '../../../components/PlaceModal'
-import { useSmetaStore } from '../../../store/smetaStore'
 import type { Place } from '../../../types'
 import WorkItem from './WorksItem'
 
