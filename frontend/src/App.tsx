@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout'
-import EditWorkPage from './pages/EditWorkPage'
-import HomePage from './pages/HomePage'
-import SettingsPage from './pages/SettingsPage'
+import EditWorkPage from './pages/edit-work/EditWorkPage'
+import HomePage from './pages/home/HomePage'
+import SettingsPage from './pages/settings/SettingsPage'
 import { useSmetaStore } from './store/smetaStore'
 import { useIsScreenTooSmall } from './utils/hooks/useIsScreenTooSmall'
 

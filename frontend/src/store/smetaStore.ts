@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { fetchWorks, normalizeDbWork } from '../api/smetaApi'
@@ -17,6 +18,7 @@ interface SmetaStore {
 	viewType: ViewTypes
 	dbWorks: NormalizedWork[]
 	dbWorksLoaded: boolean
+	isMultiplePlaces: boolean
 
 	loadDbWorks: () => Promise<void>
 	setObjectName: (name: string) => void
@@ -27,6 +29,7 @@ interface SmetaStore {
 	setIsTransportCost: (value: boolean) => void
 	setIsTrashCost: (value: boolean) => void
 	setViewType: (value: ViewTypes) => void
+	setIsMultiplePlaces: (value: boolean) => void
 
 	addPlace: (name: string) => string // возвращает id
 	removePlace: (placeId: string) => void
@@ -53,6 +56,7 @@ export const useSmetaStore = create<SmetaStore>()(
 			viewType: 'TOTAL',
 			dbWorks: [],
 			dbWorksLoaded: false,
+			isMultiplePlaces: false,
 
 			loadDbWorks: async () => {
 				if (get().dbWorksLoaded) return // уже загружено — выходим
@@ -74,6 +78,11 @@ export const useSmetaStore = create<SmetaStore>()(
 			setDark: value => set({ isDark: value }),
 			setImportedTable: value => set({ importedTable: value }),
 
+			setIsMultiplePlaces: value => {
+				set({
+					isMultiplePlaces: value
+				})
+			},
 			setIsTransportCost: value =>
 				set({
 					isTransportCost: value
@@ -91,7 +100,7 @@ export const useSmetaStore = create<SmetaStore>()(
 			},
 
 			addPlace: name => {
-				const id = crypto.randomUUID()
+				const id = nanoid()
 				set(state => ({
 					places: [...state.places, { id, name, works: [] }],
 					importedTable: null
@@ -119,7 +128,7 @@ export const useSmetaStore = create<SmetaStore>()(
 						p.id === placeId
 							? {
 									...p,
-									works: [...p.works, { ...work, id: crypto.randomUUID() }]
+									works: [...p.works, { ...work, id: nanoid() }]
 								}
 							: p
 					),
@@ -130,11 +139,11 @@ export const useSmetaStore = create<SmetaStore>()(
 				let arrayPlace: Place[] = []
 				Object.entries(parsedWorks).forEach(place =>
 					arrayPlace.push({
-						id: crypto.randomUUID(),
+						id: nanoid(),
 						name: place[0],
 						works: place[1].map(item => {
 							return {
-								id: crypto.randomUUID(),
+								id: nanoid(),
 								name: item.name,
 								price: item.price,
 								quantity: item.quantity,
@@ -198,7 +207,8 @@ export const useSmetaStore = create<SmetaStore>()(
 				isTrashCost: state.isTrashCost,
 				viewType: state.viewType,
 				dbWorks: state.dbWorks,
-				dbWorksLoaded: state.dbWorksLoaded
+				dbWorksLoaded: state.dbWorksLoaded,
+				isMultiplePlaces: state.isMultiplePlaces
 			})
 		}
 	)

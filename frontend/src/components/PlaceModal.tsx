@@ -5,16 +5,23 @@ import { useSmetaStore } from '../store/smetaStore'
 interface Props {
 	open: boolean
 	onClose: () => void
+	value?: string
+	placeId?: string
 }
 
-export default function AddPlaceModal({ open, onClose }: Props) {
-	const { addPlace, isDark } = useSmetaStore()
-	const [name, setName] = useState('')
+export default function PlaceModal({
+	open,
+	onClose,
+	value = '',
+	placeId
+}: Props) {
+	const { addPlace, isDark, renamePlace } = useSmetaStore()
+	const [name, setName] = useState(value)
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
 		if (open) {
-			setName('')
+			setName(value)
 			setTimeout(() => inputRef.current?.focus(), 50)
 		}
 	}, [open])
@@ -24,7 +31,13 @@ export default function AddPlaceModal({ open, onClose }: Props) {
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 		if (!name.trim()) return
-		addPlace(name.trim())
+		if (value.length > 0) {
+			if (placeId) {
+				renamePlace(placeId, name.trim())
+			}
+		} else {
+			addPlace(name.trim())
+		}
 		onClose()
 	}
 
@@ -43,7 +56,9 @@ export default function AddPlaceModal({ open, onClose }: Props) {
 				}`}
 			>
 				<div className='flex items-center justify-between mb-5'>
-					<h2 className='text-lg font-semibold'>Новое помещение</h2>
+					<h2 className='text-lg font-semibold'>
+						{value.length > 0 ? 'Редактирование помещения' : 'Новое помещение'}
+					</h2>
 					<button
 						onClick={onClose}
 						className={`p-1.5 rounded-lg cursor-pointer transition-colors ${
@@ -69,16 +84,23 @@ export default function AddPlaceModal({ open, onClose }: Props) {
 						<input
 							ref={inputRef}
 							value={name}
-							onChange={e => setName(e.target.value)}
+							spellCheck
+							onChange={e => {
+								let value =
+									e.target.value.length === 1
+										? e.target.value.toUpperCase()
+										: e.target.value
+
+								setName(value)
+							}}
 							placeholder='Например: Кухня, Ванная, Коридор...'
 							className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
 								isDark
-									? 'bg-neutral-800 border border-neutral-700 text-white placeholder:text-neutral-500'
-									: 'bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400'
+									? 'bg-neutral-800 border border-neutral-700 text-white '
+									: 'bg-slate-50 border border-slate-200 text-slate-900 '
 							}`}
 						/>
 					</div>
-
 					<div className='flex gap-3 pt-1'>
 						<button
 							type='button'
@@ -93,10 +115,10 @@ export default function AddPlaceModal({ open, onClose }: Props) {
 						</button>
 						<button
 							type='submit'
-							disabled={!name.trim()}
-							className='flex-1 h-11 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+							disabled={name.trim() === value}
+							className={`flex-1 h-11 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50  ${name.trim() === value ? 'cursor-not-allowed' : 'cursor-pointer'}`}
 						>
-							Добавить
+							{value.length > 0 ? 'Изменить' : 'Добавить'}
 						</button>
 					</div>
 				</form>

@@ -7,8 +7,10 @@ import multer from 'multer'
 import slugify from 'slugify'
 import { TEMPLATE_BASE64 } from './templateBase64'
 
+import path from 'path'
+
 dotenv.config({
-	path: '../../.env'
+	path: path.resolve(__dirname, '../../.env')
 })
 
 const app = express()
@@ -430,7 +432,7 @@ app.post(
 
 // ========== Запуск ==========
 if (process.env.NODE_ENV !== 'production') {
-	app.listen(PORT, () => {
+	app.listen(Number(PORT), '0.0.0.0', () => {
 		console.log(`Сервер запущен на http://localhost:${PORT}`)
 	})
 }

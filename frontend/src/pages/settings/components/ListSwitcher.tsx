@@ -1,6 +1,6 @@
 import { type LucideIcon, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { useSmetaStore } from '../../store/smetaStore'
+import { useSmetaStore } from '../../../store/smetaStore'
 
 interface Props<T extends string> {
 	icons: {

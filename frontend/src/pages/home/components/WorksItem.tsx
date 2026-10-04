@@ -1,7 +1,9 @@
 import { Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useSmetaStore } from '../../store/smetaStore'
-import type { Place, Work } from '../../types'
+import Modal from '../../../components/Modal'
+import { useSmetaStore } from '../../../store/smetaStore'
+import { type Place, type Work } from '../../../types'
 
 interface Props {
 	place: Place
@@ -27,6 +29,7 @@ function getUnitColor(unit: string) {
 
 export default function WorkItem({ place, work }: Props) {
 	const { removeWork, viewType } = useSmetaStore()
+	const [isDeleteModal, setIsDeleteModal] = useState(false)
 
 	const color = getUnitColor(work.unit)
 	const sum = viewType === 'TOTAL' ? work.quantity * work.price : work.price
@@ -57,7 +60,7 @@ export default function WorkItem({ place, work }: Props) {
 				onClick={e => {
 					e.preventDefault()
 					e.stopPropagation()
-					removeWork(place.id, work.id)
+					setIsDeleteModal(true)
 				}}
 				className='absolute top-3 right-3 p-2 rounded-xl bg-black/20 hover:bg-black/40 transition-colors cursor-pointer z-10'
 			>
@@ -67,6 +70,22 @@ export default function WorkItem({ place, work }: Props) {
 			<Link
 				to={`/works/${place.id}/${work.id}`}
 				className='absolute inset-0 rounded-2xl z-0'
+			/>
+			<Modal
+				isOpen={isDeleteModal}
+				onClose={() => setIsDeleteModal(false)}
+				description={`Название работы: ${work.name}`}
+				title='Уверены, что хотите удалить работу?'
+				buttons={{
+					grey: { title: 'Нет', onClick: () => setIsDeleteModal(false) },
+					blue: {
+						title: 'Удалить',
+						onClick: () => {
+							setIsDeleteModal(false)
+							removeWork(place.id, work.id)
+						}
+					}
+				}}
 			/>
 		</div>
 	)

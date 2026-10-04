@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ChangeEvent } from 'react'
-import { useSmetaStore } from '../../store/smetaStore'
+import { useSmetaStore } from '../../../store/smetaStore'
 
 interface Props {
 	icons: {
@@ -11,8 +11,8 @@ interface Props {
 	setSwitchable: (value: boolean) => void
 	title: string
 	description: {
-		dark: string
-		light?: string
+		enabled: string
+		disabled: string
 	}
 	inputValue?: string
 	onInputChange?: (e: ChangeEvent<HTMLInputElement>) => void
@@ -33,17 +33,13 @@ export default function Switcher({
 		icons.light = icons.dark
 	}
 
-	if (!description.light) {
-		description.light = description.dark
-	}
-
 	return (
 		<div
 			className={`rounded-2xl p-5 ${
 				isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'
 			}`}
 		>
-			<div className='flex items-center justify-between'>
+			<div className='flex items-center justify-between '>
 				<div className='flex items-center gap-3'>
 					{isDark ? (
 						<icons.dark className='w-5 h-5 text-blue-400' />
@@ -55,7 +51,7 @@ export default function Switcher({
 						<p
 							className={`text-xs ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
 						>
-							{switchable ? description.dark : description.light}
+							{switchable ? description.enabled : description.disabled}
 						</p>
 					</div>
 				</div>
@@ -64,7 +60,7 @@ export default function Switcher({
 					onClick={() => setSwitchable(!switchable)}
 					className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer ${
 						switchable ? 'bg-blue-600' : 'bg-slate-300'
-					}`}
+					} `}
 				>
 					<div
 						className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${

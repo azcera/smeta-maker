@@ -1,9 +1,9 @@
 import { ArrowLeft, Save, Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import Modal from '../components/Modal'
-import { useSmetaStore } from '../store/smetaStore'
-import type { ModalMessageType, NormalizedWork } from '../types'
+import Modal from '../../components/Modal'
+import { useSmetaStore } from '../../store/smetaStore'
+import type { ModalMessageType, NormalizedWork } from '../../types'
 
 export default function EditWorkPage() {
 	const { placeId: paramPlaceId, id } = useParams()
