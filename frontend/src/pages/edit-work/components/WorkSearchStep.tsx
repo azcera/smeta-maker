@@ -62,7 +62,6 @@ export function WorkSearchStep({
 
 	return (
 		<div className='max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full bg-neutral-950'>
-			{/* ШАПКА: Перевели на fixed top-0 left-0. Теперь она приколочена к верху экрана экрана намертво */}
 			<div
 				className={`bg-neutral-950 fixed top-0 left-0 right-0 z-20 px-4 pb-4 space-y-4 max-w-md mx-auto ${
 					isInputFocused

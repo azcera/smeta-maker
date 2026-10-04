@@ -104,21 +104,26 @@ export default function EditWorkPage() {
 		}
 	}, [step])
 
-	// Обработчики логики
-	const filtered = dbWorks.filter(w =>
-		w.name.toLowerCase().includes(query.toLowerCase())
-	)
+	const filtered = dbWorks.filter(w => {
+		const searchWords = query.toLowerCase().split(/\s+/).filter(Boolean)
+
+		const nameLower = w.name.toLowerCase()
+
+		return searchWords.every(word => nameLower.includes(word))
+	})
 
 	const selectFromDb = (item: NormalizedWork) => {
 		setName(item.name)
 		setUnit(item.unit)
 		setPrice(item.price)
+		setQuantity(0)
 		setFromDb(true)
 		setStep('form')
 	}
 
 	const goToManual = () => {
 		setName(query)
+		setQuantity(1)
 		setFromDb(false)
 		setStep('form')
 	}

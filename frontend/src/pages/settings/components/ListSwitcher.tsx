@@ -10,7 +10,7 @@ interface Props<T extends string> {
 	value: T
 	setValue: (value: T) => void
 	title: string
-	description: string
+	description?: string
 	options: SwitcherOption<T>[]
 }
 
@@ -40,41 +40,35 @@ export default function ListSwitcher<T extends string>({
 			}`}
 		>
 			<div className='flex items-center justify-between'>
-				<div className='flex items-center gap-3'>
+				<div className='flex-1 flex items-center gap-3'>
 					<IconToRender
 						className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-amber-500'}`}
 					/>
 					<div>
 						<p className='font-medium text-sm'>{title}</p>
-						<p
-							className={`text-xs ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
-						>
-							{description}
-						</p>
+						{description ? (
+							<p
+								className={`text-xs ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
+							>
+								{description}
+							</p>
+						) : null}
 					</div>
 				</div>
 				<div className='relative inline-grid max-w-full text-sm'>
 					{/* Кнопка-триггер */}
 					<div
 						className={`${isDark ? 'bg-neutral-800 text-white' : 'bg-slate-50 text-black'} 
-          flex items-center justify-between gap-3 rounded-lg p-1.5 cursor-pointer select-none`}
+          flex justify-center items-center gap-3 rounded-lg p-1.5 cursor-pointer select-none`}
 						onClick={() => setIsOpen(!isOpen)}
 					>
-						<div className='grid grid-cols-1 grid-rows-1 min-w-0'>
-							{options.map(v => {
-								const isSelected = v.id === value
-								return (
-									<span
-										key={v.id}
-										className={`col-start-1 row-start-1 whitespace-normal wrap-break-words transition-opacity
-                  ${isSelected ? 'opacity-100' : 'opacity-0 invisible pointer-events-none'}`}
-									>
-										{v.name}
-									</span>
-								)
-							})}
+						<div className='justify-center items-center min-w-0'>
+							<label
+								className={`text-center flex whitespace-normal wrap-break-words transition-opacity`}
+							>
+								{options.find(v => v.id === value)?.name}
+							</label>
 						</div>
-
 						<ChevronDown
 							size={16}
 							className={`shrink-0 ${isDark ? 'text-neutral-400' : 'text-slate-500'} transition-transform ${isOpen ? 'rotate-180' : ''}`}
