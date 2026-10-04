@@ -38,7 +38,7 @@ export default function Switcher({
 			}`}
 		>
 			<div className='flex items-center justify-between '>
-				<div className='flex items-center gap-3'>
+				<div className='flex flex-1 items-center gap-3'>
 					<IconToRender
 						className={`w-5 h-5 ${isDark ? 'text-blue-400' : 'text-amber-500'}`}
 					/>
@@ -55,7 +55,7 @@ export default function Switcher({
 
 				<button
 					onClick={() => setSwitchable(!switchable)}
-					className={`w-12 h-7 rounded-full transition-colors relative cursor-pointer ${
+					className={` w-12 h-7 rounded-full transition-colors relative cursor-pointer ${
 						switchable ? 'bg-blue-600' : 'bg-slate-300'
 					} `}
 				>
