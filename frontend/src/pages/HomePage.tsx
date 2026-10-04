@@ -110,9 +110,7 @@ export default function HomePage() {
 			if (canShare) {
 				try {
 					await navigator.share({
-						files: [file],
-						title: 'Смета',
-						text: `Смета по объекту «${objectName}»`
+						files: [file]
 					})
 					// Пользователь успешно поделился — ничего больше не делаем
 					return
