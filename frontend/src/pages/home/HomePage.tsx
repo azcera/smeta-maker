@@ -1,9 +1,9 @@
 // pages/HomePage.tsx
 import { Plus } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createSearchParams, useNavigate } from 'react-router-dom'
-import AddPlaceModal from '../../components/PlaceModal'
 import Modal from '../../components/Modal'
+import PlaceModal from '../../components/PlaceModal'
 import { useSmetaStore } from '../../store/smetaStore'
 import type { ModalMessageType } from '../../types'
 import { BottomActionBar } from './components/BottomActionBar'
@@ -33,6 +33,13 @@ export default function HomePage() {
 		description: ''
 	})
 
+	const isInitialLoadRef = useRef(true)
+	const prevTotalElementsRef = useRef(0)
+
+	const currentPlacesCount = places.length
+	const currentWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)
+	const totalElementsCount = currentPlacesCount + currentWorksCount
+
 	const handleError = (msg: ModalMessageType) => {
 		setModalMessage(msg)
 		setIsErrorModal(true)
@@ -44,7 +51,23 @@ export default function HomePage() {
 	}, [])
 
 	useEffect(() => {
-		if (places.length > 0) {
+		if (isInitialLoadRef.current) {
+			isInitialLoadRef.current = false
+
+			if (places.length > 0) {
+				setTimeout(() => {
+					window.scrollTo({
+						top: document.documentElement.scrollHeight,
+						behavior: 'smooth'
+					})
+				}, 100)
+			}
+
+			prevTotalElementsRef.current = totalElementsCount
+			return
+		}
+
+		if (totalElementsCount > prevTotalElementsRef.current) {
 			const timer = setTimeout(() => {
 				window.scrollTo({
 					top: document.documentElement.scrollHeight,
@@ -52,9 +75,12 @@ export default function HomePage() {
 				})
 			}, 50)
 
+			prevTotalElementsRef.current = totalElementsCount
 			return () => clearTimeout(timer)
 		}
-	}, [places])
+
+		prevTotalElementsRef.current = totalElementsCount
+	}, [places, totalElementsCount])
 
 	const allWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)
 	const total =
@@ -106,7 +132,7 @@ export default function HomePage() {
 				}}
 			/>
 
-			<AddPlaceModal
+			<PlaceModal
 				open={showAddPlace}
 				onClose={() => setShowAddPlace(false)}
 			/>

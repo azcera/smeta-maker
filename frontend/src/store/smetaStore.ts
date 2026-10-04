@@ -8,37 +8,45 @@ export type ViewTypes = 'TOTAL' | 'QUANTITY'
 
 interface SmetaStore {
 	objectName: string
-	places: Place[]
-	transportCost: number
-	trashCost: number
-	isDark: boolean
-	isTransportCost: boolean
-	isTrashCost: boolean
-	importedTable: string | null
-	viewType: ViewTypes
-	dbWorks: NormalizedWork[]
-	dbWorksLoaded: boolean
-	isMultiplePlaces: boolean
-
-	loadDbWorks: () => Promise<void>
 	setObjectName: (name: string) => void
+
+	transportCost: number
 	setTransportCost: (value: number) => void
+
+	trashCost: number
 	setTrashCost: (value: number) => void
+
+	isDark: boolean
 	setDark: (value: boolean) => void
-	setImportedTable: (value: string) => void
+
+	isTransportCost: boolean
 	setIsTransportCost: (value: boolean) => void
+
+	isTrashCost: boolean
 	setIsTrashCost: (value: boolean) => void
+
+	importedTable: string | null
+	setImportedTable: (value: string) => void
+
+	viewType: ViewTypes
 	setViewType: (value: ViewTypes) => void
+
+	isMultiplePlaces: boolean
 	setIsMultiplePlaces: (value: boolean) => void
 
+	places: Place[]
 	addPlace: (name: string) => string // возвращает id
 	removePlace: (placeId: string) => void
 	renamePlace: (placeId: string, name: string) => void
 
+	dbWorks: NormalizedWork[]
+	dbWorksLoaded: boolean
+	loadDbWorks: () => Promise<void>
 	addWork: (placeId: string, work: Omit<Work, 'id'>) => void
 	updateWork: (placeId: string, workId: string, data: Partial<Work>) => void
 	removeWork: (placeId: string, workId: string) => void
 	addParsedWorks: (parsedWorks: PlacesArray) => void
+
 	clearAll: () => void
 }
 
@@ -46,59 +54,47 @@ export const useSmetaStore = create<SmetaStore>()(
 	persist(
 		(set, get) => ({
 			objectName: '',
-			places: [],
-			transportCost: 10000,
-			trashCost: 10000,
-			isDark: true,
-			isTransportCost: false,
-			isTrashCost: false,
-			importedTable: null,
-			viewType: 'TOTAL',
-			dbWorks: [],
-			dbWorksLoaded: false,
-			isMultiplePlaces: false,
-
-			loadDbWorks: async () => {
-				if (get().dbWorksLoaded) return // уже загружено — выходим
-
-				try {
-					const raw = await fetchWorks()
-					const normalized = raw.map(normalizeDbWork)
-					set({
-						dbWorks: normalized,
-						dbWorksLoaded: true
-					})
-				} catch (err) {
-					console.error('Не удалось загрузить базу работ', err)
-				}
-			},
 			setObjectName: name => set({ objectName: name }),
-			setTransportCost: value => set({ transportCost: value }),
-			setTrashCost: value => set({ trashCost: value }),
-			setDark: value => set({ isDark: value }),
-			setImportedTable: value => set({ importedTable: value }),
 
-			setIsMultiplePlaces: value => {
-				set({
-					isMultiplePlaces: value
-				})
-			},
+			transportCost: 10000,
+			setTransportCost: value => set({ transportCost: value }),
+
+			trashCost: 10000,
+			setTrashCost: value => set({ trashCost: value }),
+
+			isDark: true,
+			setDark: value => set({ isDark: value }),
+
+			isTransportCost: false,
 			setIsTransportCost: value =>
 				set({
 					isTransportCost: value
 				}),
 
+			isTrashCost: false,
 			setIsTrashCost: value =>
 				set({
 					isTrashCost: value
 				}),
 
+			importedTable: null,
+			setImportedTable: value => set({ importedTable: value }),
+
+			viewType: 'TOTAL',
 			setViewType(value) {
 				set({
 					viewType: value
 				})
 			},
 
+			isMultiplePlaces: false,
+			setIsMultiplePlaces: value => {
+				set({
+					isMultiplePlaces: value
+				})
+			},
+
+			places: [],
 			addPlace: name => {
 				const id = nanoid()
 				set(state => ({
@@ -121,6 +117,23 @@ export const useSmetaStore = create<SmetaStore>()(
 					),
 					importedTable: null
 				})),
+
+			dbWorks: [],
+			dbWorksLoaded: false,
+			loadDbWorks: async () => {
+				if (get().dbWorksLoaded) return // уже загружено — выходим
+
+				try {
+					const raw = await fetchWorks()
+					const normalized = raw.map(normalizeDbWork)
+					set({
+						dbWorks: normalized,
+						dbWorksLoaded: true
+					})
+				} catch (err) {
+					console.error('Не удалось загрузить базу работ', err)
+				}
+			},
 
 			addWork: (placeId, work) =>
 				set(state => ({

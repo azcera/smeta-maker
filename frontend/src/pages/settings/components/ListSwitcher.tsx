@@ -29,9 +29,6 @@ export default function ListSwitcher<T extends string>({
 }: Props<T>) {
 	const { isDark } = useSmetaStore()
 
-	if (!icons.light) {
-		icons.light = icons.dark
-	}
 	const IconToRender = isDark ? icons.dark : icons.light || icons.dark
 
 	const [isOpen, setIsOpen] = useState(false)

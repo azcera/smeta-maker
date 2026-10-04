@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import { useSmetaStore } from '../store/smetaStore'
 
 interface Props {
@@ -28,7 +28,7 @@ export default function PlaceModal({
 
 	if (!open) return null
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
 		e.preventDefault()
 		if (!name.trim()) return
 		if (value.length > 0) {

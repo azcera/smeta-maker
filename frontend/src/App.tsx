@@ -12,7 +12,7 @@ function App() {
 
 	useEffect(() => {
 		loadDbWorks()
-	}, [loadDbWorks])
+	}, [])
 
 	const isTooSmall = useIsScreenTooSmall(300)
 	if (isTooSmall) {

@@ -2,6 +2,7 @@ import { Eye, EyeClosed, Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import Modal from '../../../components/Modal'
 import PlaceModal from '../../../components/PlaceModal'
+import { useSmetaStore } from '../../../store/smetaStore'
 import type { Place } from '../../../types'
 import WorkItem from './WorksItem'
 
@@ -18,7 +19,6 @@ export function PlaceList({
 	onRemovePlace,
 	onAddWorkClick
 }: PlaceListProps) {
-	// Храним только ID свернутых помещений. Изначально все развернуты (пустой массив)
 	const [collapsedIds, setCollapsedIds] = useState<string[]>([])
 	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const [isPlaceEditModal, setIsPlaceEditModal] = useState(false)
@@ -42,9 +42,13 @@ export function PlaceList({
 		)
 	}
 
-	const showModalDeletePlace = (deletingPlace: Place) => {
-		setEditingPlace(deletingPlace)
-		setIsDeleteModal(true)
+	const showModalPlace = (editingPlace: Place, action: 'DELETE' | 'EDIT') => {
+		setEditingPlace(editingPlace)
+		if (action === 'DELETE') {
+			setIsDeleteModal(true)
+		} else {
+			setIsPlaceEditModal(true)
+		}
 	}
 
 	return (
@@ -66,10 +70,7 @@ export function PlaceList({
 									{place.name}
 								</h2>
 								<button
-									onClick={() => {
-										setEditingPlace(place)
-										setIsPlaceEditModal(true)
-									}}
+									onClick={() => showModalPlace(place, 'EDIT')}
 									className={`p-1.5 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-slate-200 text-slate-400'}`}
 									title='Редактировать'
 								>
@@ -92,9 +93,7 @@ export function PlaceList({
 
 								{/* Кнопка Удалить */}
 								<button
-									onClick={() => {
-										showModalDeletePlace(place)
-									}}
+									onClick={() => showModalPlace(place, 'DELETE')}
 									className={`p-1.5 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-slate-200 text-slate-400'}`}
 								>
 									<Trash2 className='w-4 h-4' />
