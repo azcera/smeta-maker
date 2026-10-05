@@ -17,6 +17,7 @@
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",
     "slugify": "^1.6.9",
+    "smeta-maker": "file:..",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
