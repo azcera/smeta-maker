@@ -4,15 +4,18 @@ import dotenv from 'dotenv'
 import ExcelJS from 'exceljs'
 import express, { NextFunction, Request, Response } from 'express'
 import multer from 'multer'
+import path from 'path'
+import serverless from 'serverless-http'
 import slugify from 'slugify'
 import { TEMPLATE_BASE64 } from './templateBase64'
 
-import path from 'path'
-
-dotenv.config({
-	path: path.resolve(__dirname, '../../.env')
-})
-
+if (process.env.NODE_ENV !== 'production') {
+	dotenv.config({
+		path: path.resolve(__dirname, '../../.env')
+	})
+} else {
+	dotenv.config()
+}
 const app = express()
 const PORT = process.env.PORT || 3000
 const LIST_TABLE = 'tula'
@@ -431,10 +434,28 @@ app.post(
 )
 
 // ========== Запуск ==========
-if (process.env.NODE_ENV !== 'production') {
-	app.listen(Number(PORT), '0.0.0.0', () => {
-		console.log(`Сервер запущен на http://localhost:${PORT}`)
-	})
+const serverlessHandler = serverless(app) // без basePath
+
+export const handler = (event: any, context: any) => {
+	// Yandex Gateway кладёт реальный путь в event.url
+	const realPath = (event.url || event.path || '/').replace(/\?.*/, '') // убираем query string
+
+	const patchedEvent = {
+		...event,
+		path: realPath,
+		// на всякий случай
+		requestContext: {
+			...event.requestContext,
+			path: realPath
+		}
+	}
+
+	return serverlessHandler(patchedEvent, context)
 }
 
-export default app
+// 2. Локальный запуск (сработает ТОЛЬКО на вашем компьютере)
+if (process.env.NODE_ENV !== 'production') {
+	app.listen(Number(PORT), '0.0.0.0', () => {
+		console.log(`[Local] Сервер запущен на http://localhost:${PORT}`)
+	})
+}

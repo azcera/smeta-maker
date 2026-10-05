@@ -14,7 +14,8 @@
 		"start": "cross-env NODE_ENV=production npm run build:all && node backend/dist/index.js",
 		"dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
 		"dev:backend": "cross-env NODE_ENV=development npm run dev --prefix backend",
-		"dev:frontend": "npm run dev --prefix frontend -- --host"
+		"dev:frontend": "npm run dev --prefix frontend -- --host",
+		"zip:backend": "npm run zip --prefix backend"
 	},
 	"devDependencies": {
 		"concurrently": "^10.0.5",

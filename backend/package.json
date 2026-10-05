@@ -9,7 +9,8 @@
 	"scripts": {
 		"dev": "ts-node-dev --respawn --transpile-only src/index.ts",
 		"build": "tsc && node -e \"const fs=require('fs');const p=require('path');const src='resource/templates';const dst='dist/resource/templates';fs.mkdirSync(dst,{recursive:true});for(const f of fs.readdirSync(src))fs.copyFileSync(p.join(src,f),p.join(dst,f));\"",
-		"start": "node dist/index.js"
+		"start": "node dist/index.js",
+		"zip": "npm run build && node -e \"const fs=require('fs');const path=require('path');const {execSync}=require('child_process');const tmp='deploy-tmp';fs.rmSync(tmp,{recursive:true,force:true});fs.mkdirSync(tmp);function copyDir(s,d){fs.mkdirSync(d,{recursive:true});for(const f of fs.readdirSync(s)){const a=path.join(s,f),b=path.join(d,f);fs.statSync(a).isDirectory()?copyDir(a,b):fs.copyFileSync(a,b)}}copyDir('dist',tmp);fs.copyFileSync('package.json',path.join(tmp,'package.json'));if(fs.existsSync('package-lock.json'))fs.copyFileSync('package-lock.json',path.join(tmp,'package-lock.json'));if(fs.existsSync('deploy-backend.zip'))fs.unlinkSync('deploy-backend.zip');execSync('powershell -Command Compress-Archive -Path deploy-tmp\\\\* -DestinationPath deploy-backend.zip -Force',{stdio:'inherit'});fs.rmSync(tmp,{recursive:true,force:true});console.log('Готово: deploy-backend.zip');\""
 	},
 	"dependencies": {
 		"@supabase/supabase-js": "^2.117.2",
@@ -18,8 +19,8 @@
 		"exceljs": "^4.4.0",
 		"express": "^5.2.1",
 		"multer": "^2.4.0",
-		"slugify": "^1.6.9",
-		"smeta-maker": "file:.."
+		"serverless-http": "^4.0.0",
+		"slugify": "^1.6.9"
 	},
 	"devDependencies": {
 		"@types/better-sqlite3": "^9.6.0",
@@ -27,6 +28,7 @@
 		"@types/express": "^5.0.6",
 		"@types/multer": "^2.2.0",
 		"@types/node": "^26.6.3",
+		"bestzip": "^4.0.3",
 		"ts-node": "^10.9.2",
 		"ts-node-dev": "^2.0.0",
 		"typescript": "5.4"
