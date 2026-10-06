@@ -6,8 +6,10 @@ import Modal from '../../components/Modal'
 import PlaceModal from '../../components/PlaceModal'
 import { useSmetaStore } from '../../store/smetaStore'
 import type { ModalMessageType } from '../../types'
+import { useLockScroll } from '../../utils/hooks/useLockScroll'
 import { BottomActionBar } from './components/BottomActionBar'
 import { PlaceList } from './components/PlaceList'
+import { useSmartScrollToBottom } from './hooks/useSmartScrollToBottom'
 import { useSmetaExport } from './hooks/useSmetaExport'
 
 export default function HomePage() {
@@ -32,13 +34,6 @@ export default function HomePage() {
 		description: ''
 	})
 
-	const isInitialLoadRef = useRef(true)
-	const prevTotalElementsRef = useRef(0)
-
-	const currentPlacesCount = places.length
-	const currentWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)
-	const totalElementsCount = currentPlacesCount + currentWorksCount
-
 	const handleError = (msg: ModalMessageType) => {
 		setModalMessage(msg)
 		setIsErrorModal(true)
@@ -49,37 +44,14 @@ export default function HomePage() {
 		document.title = 'Создатель смет'
 	}, [])
 
-	useEffect(() => {
-		if (isInitialLoadRef.current) {
-			isInitialLoadRef.current = false
+	const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-			if (places.length > 0) {
-				setTimeout(() => {
-					window.scrollTo({
-						top: document.documentElement.scrollHeight,
-						behavior: 'smooth'
-					})
-				}, 100)
-			}
+	useSmartScrollToBottom({
+		containerRef: scrollContainerRef,
+		triggerDeps: places
+	})
 
-			prevTotalElementsRef.current = totalElementsCount
-			return
-		}
-
-		if (totalElementsCount > prevTotalElementsRef.current) {
-			const timer = setTimeout(() => {
-				window.scrollTo({
-					top: document.documentElement.scrollHeight,
-					behavior: 'smooth'
-				})
-			}, 50)
-
-			prevTotalElementsRef.current = totalElementsCount
-			return () => clearTimeout(timer)
-		}
-
-		prevTotalElementsRef.current = totalElementsCount
-	}, [places, totalElementsCount])
+	useLockScroll(true)
 
 	const allWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)
 	const total =
@@ -98,27 +70,33 @@ export default function HomePage() {
 	}
 
 	return (
-		<div className='pb-40'>
-			<div className='flex flex-col items-center gap-6'>
+		<div
+			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+		>
+			<div
+				ref={scrollContainerRef}
+				className='no-scrollbar flex items-center flex-col overflow-y-auto w-full h-full space-y-5 min-h-0 pb-10'
+				style={{
+					paddingBottom: 'calc(200px + 1rem + env(safe-area-inset-top))'
+				}}
+			>
 				<PlaceList
 					places={places}
 					isDark={isDark}
 					onRemovePlace={removePlace}
 					onAddWorkClick={id => navigate(`/works/new?placeId=${id}`)}
 				/>
-				{places.length > 0 ? null : (
-					<button
-						onClick={() => setShowAddPlace(true)}
-						className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer ${
-							isDark
-								? 'bg-neutral-800 border border-neutral-700 hover:bg-neutral-700'
-								: 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-800'
-						}`}
-						title='Добавить помещение'
-					>
-						<Plus className='w-7 h-7' />
-					</button>
-				)}
+				<button
+					onClick={() => setShowAddPlace(true)}
+					className={`shrink-0 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer ${
+						isDark
+							? 'bg-neutral-800 border border-neutral-700 hover:bg-neutral-700'
+							: 'bg-white border border-slate-200 hover:bg-slate-50 text-slate-800'
+					}`}
+					title='Добавить помещение'
+				>
+					<Plus className='w-7 h-7' />
+				</button>
 			</div>
 
 			<BottomActionBar

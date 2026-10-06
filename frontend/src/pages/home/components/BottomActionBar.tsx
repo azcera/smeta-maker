@@ -20,27 +20,23 @@ export function BottomActionBar({
 	const { isDark, viewType, setViewType } = useSmetaStore()
 
 	return (
-		<div
-			className={`fixed bottom-0 left-0 right-0 z-20 ${isDark ? 'bg-neutral-950' : 'bg-white'}`}
-		>
-			<div className='max-w-2xl mx-auto px-4 py-4'>
-				<div className='flex justify-center mb-4'>
-					<button
-						onClick={() =>
-							setViewType(viewType === 'QUANTITY' ? 'TOTAL' : 'QUANTITY')
-						}
-						className={`cursor-pointer px-4 py-1.5 rounded-full text-sm ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-slate-100 text-slate-600'}`}
+		<div className={`fixed bottom-0 left-0 right-0 z-20 `}>
+			<div className='max-w-2xl mx-auto px-4 py-4 flex justify-center flex-col'>
+				<button
+					onClick={() =>
+						setViewType(viewType === 'QUANTITY' ? 'TOTAL' : 'QUANTITY')
+					}
+					className={`block mx-auto mb-4 cursor-pointer px-4 py-1.5 rounded-full text-sm ${isDark ? 'bg-neutral-800 text-neutral-300' : 'bg-slate-100 text-slate-600'}`}
+				>
+					Итого:{' '}
+					<span
+						className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}
 					>
-						Итого:{' '}
-						<span
-							className={`font-medium ${isDark ? 'text-white' : 'text-slate-900'}`}
-						>
-							{total.toLocaleString('ru-RU')} ₽
-						</span>
-					</button>
-				</div>
+						{total.toLocaleString('ru-RU')} ₽
+					</span>
+				</button>
 
-				<div className='flex items-center gap-3'>
+				<div className={`flex items-center gap-3 `}>
 					<button
 						onClick={onDeleteClick}
 						className='h-12 px-4 rounded-2xl bg-red-500/90 hover:bg-red-500 flex items-center justify-center transition-colors cursor-pointer shrink-0'
