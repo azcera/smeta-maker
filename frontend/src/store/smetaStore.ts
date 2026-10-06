@@ -31,9 +31,6 @@ interface SmetaStore {
 	viewType: ViewTypes
 	setViewType: (value: ViewTypes) => void
 
-	isMultiplePlaces: boolean
-	setIsMultiplePlaces: (value: boolean) => void
-
 	places: Place[]
 	addPlace: (name: string) => string // возвращает id
 	removePlace: (placeId: string) => void
@@ -46,6 +43,9 @@ interface SmetaStore {
 	updateWork: (placeId: string, workId: string, data: Partial<Work>) => void
 	removeWork: (placeId: string, workId: string) => void
 	addParsedWorks: (parsedWorks: PlacesArray) => void
+
+	isSearchMethod: boolean
+	setIsSearchMethod: (value: boolean) => void
 
 	clearAll: () => void
 }
@@ -84,13 +84,6 @@ export const useSmetaStore = create<SmetaStore>()(
 			setViewType(value) {
 				set({
 					viewType: value
-				})
-			},
-
-			isMultiplePlaces: false,
-			setIsMultiplePlaces: value => {
-				set({
-					isMultiplePlaces: value
 				})
 			},
 
@@ -195,6 +188,9 @@ export const useSmetaStore = create<SmetaStore>()(
 					importedTable: null
 				})),
 
+			isSearchMethod: true,
+			setIsSearchMethod: value => set({ isSearchMethod: value }),
+
 			clearAll: () =>
 				set({
 					places: [],
@@ -221,7 +217,7 @@ export const useSmetaStore = create<SmetaStore>()(
 				viewType: state.viewType,
 				dbWorks: state.dbWorks,
 				dbWorksLoaded: state.dbWorksLoaded,
-				isMultiplePlaces: state.isMultiplePlaces
+				isSearchMethod: state.isSearchMethod
 			})
 		}
 	)

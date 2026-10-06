@@ -1,8 +1,10 @@
-import { ArrowLeft, Building, Eye, Moon, Sun, Trash, Truck } from 'lucide-react'
+import { Eye, Moon, Search, Sun, Trash, Truck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Header } from '../../components/layout/Header'
 import Modal from '../../components/Modal'
 import type { ViewTypes } from '../../store/smetaStore'
+import { useLockScroll } from '../../utils/hooks/useLockScroll'
 import { FileImporter } from './components/FileImporter'
 import ListSwitcher, { type SwitcherOption } from './components/ListSwitcher'
 import Switcher from './components/Switcher'
@@ -15,7 +17,6 @@ export default function SettingsPage() {
 	const inputNameRef = useRef<HTMLInputElement>(null)
 
 	const {
-		places,
 		objectName,
 		setObjectName,
 		isDark,
@@ -23,8 +24,6 @@ export default function SettingsPage() {
 		importedTable,
 		viewType,
 		setViewType,
-		isMultiplePlaces,
-		setIsMultiplePlaces,
 		isTransportCost,
 		setIsTransportCost,
 		transportCost,
@@ -37,7 +36,9 @@ export default function SettingsPage() {
 		loading,
 		fileInputRef,
 		handleFileChange,
-		handleCostChange
+		handleCostChange,
+		isSearchMethod,
+		setIsSearchMethod
 	} = useSettings()
 
 	useEffect(() => {
@@ -55,128 +56,124 @@ export default function SettingsPage() {
 		{ id: 'TOTAL', name: 'Общая стоимость' }
 	]
 
+	useLockScroll(true)
+
 	return (
-		<div className='space-y-6 max-w-md mx-auto'>
+		<div
+			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+		>
 			{/* Хедер */}
-			<div className='flex items-center gap-3'>
-				<button
-					onClick={() => navigate('/')}
-					className={`p-2 -ml-2 rounded-xl transition-colors cursor-pointer ${
-						isDark ? 'hover:bg-neutral-800' : 'hover:bg-slate-200'
-					}`}
-				>
-					<ArrowLeft className='w-5 h-5' />
-				</button>
-				<div>
-					<h1 className='text-xl font-bold'>Настройки</h1>
-					<p
-						className={`text-sm ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
-					>
-						Параметры сметы
-					</p>
-				</div>
-			</div>
-
-			{/* Название объекта */}
+			<Header
+				onBackClick={() => navigate('/')}
+				title='Настройки'
+				subtitle='Параметры сметы'
+			/>
 			<div
-				className={`rounded-2xl p-5 space-y-3 ${isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'}`}
-			>
-				<label
-					className={`block text-sm ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
-				>
-					Название объекта
-				</label>
-				<input
-					value={objectName}
-					ref={inputNameRef}
-					onChange={e => setObjectName(e.target.value)}
-					placeholder='Например: Квартира ул. Ленина 15'
-					className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-						isDark
-							? 'bg-neutral-800 border border-neutral-700 text-white'
-							: 'bg-slate-50 border border-slate-200 text-slate-900'
-					}`}
-				/>
-			</div>
-
-			{/* Импорт таблицы */}
-			<FileImporter
-				fileInputRef={fileInputRef}
-				loading={loading}
-				importedTable={importedTable}
-				error={error}
-				onFileChange={handleFileChange}
-				isDark={isDark}
-			/>
-
-			{/* Переключатели */}
-			<Switcher
-				icons={{ dark: Moon, light: Sun }}
-				description={{
-					enabled: 'Сейчас включена',
-					disabled: 'Сейчас выключена'
+				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-5 min-h-0 pb-10'
+				style={{
+					paddingTop: 'calc(50px + 1rem + env(safe-area-inset-top))'
 				}}
-				switchable={isDark}
-				setSwitchable={setDark}
-				title='Тёмная тема'
-			/>
+			>
+				{/* Название объекта */}
+				<div
+					className={`rounded-2xl p-5 space-y-3 ${isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'}`}
+				>
+					<label
+						className={`block text-sm ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
+					>
+						Название объекта
+					</label>
+					<input
+						value={objectName}
+						ref={inputNameRef}
+						onChange={e => setObjectName(e.target.value)}
+						placeholder='Например: Квартира ул. Ленина 15'
+						className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+							isDark
+								? 'bg-neutral-800 border border-neutral-700 text-white'
+								: 'bg-slate-50 border border-slate-200 text-slate-900'
+						}`}
+					/>
+				</div>
 
-			<ListSwitcher
-				icons={{ dark: Eye }}
-				description=''
-				title='Режим отображения'
-				options={viewTypeOptions}
-				setValue={setViewType}
-				value={viewType}
-			/>
-			{places.length > 1 ? null : (
+				{/* Импорт таблицы */}
+				<FileImporter
+					fileInputRef={fileInputRef}
+					loading={loading}
+					importedTable={importedTable}
+					error={error}
+					onFileChange={handleFileChange}
+					isDark={isDark}
+				/>
+
+				{/* Переключатели */}
 				<Switcher
-					icons={{ dark: Building }}
+					icons={{ dark: Moon, light: Sun }}
 					description={{
-						enabled: 'Сейчас включено',
+						enabled: 'Сейчас включена',
 						disabled: 'Сейчас выключена'
 					}}
-					switchable={isMultiplePlaces}
-					setSwitchable={setIsMultiplePlaces}
-					title='Использование нескольких помещений'
+					switchable={isDark}
+					setSwitchable={setDark}
+					title='Тёмная тема'
 				/>
-			)}
 
-			<Switcher
-				icons={{ dark: Truck }}
-				description={{
-					enabled: 'Сейчас учитываются',
-					disabled: 'Сейчас не учитываются'
-				}}
-				switchable={isTransportCost}
-				setSwitchable={setIsTransportCost}
-				title='Транспортные расходы'
-				inputValue={transportCost.toString()}
-				onInputChange={e => handleCostChange(e, setTransportCost)}
-			/>
+				<ListSwitcher
+					icons={{ dark: Eye }}
+					description=''
+					title='Режим отображения'
+					options={viewTypeOptions}
+					setValue={setViewType}
+					value={viewType}
+				/>
 
-			<Switcher
-				icons={{ dark: Trash }}
-				description={{
-					enabled: 'Сейчас учитывается',
-					disabled: 'Сейчас не учитывается'
-				}}
-				switchable={isTrashCost}
-				setSwitchable={setIsTrashCost}
-				title='Вынос мусора'
-				inputValue={trashCost.toString()}
-				onInputChange={e => handleCostChange(e, setTrashCost)}
-			/>
+				<Switcher
+					icons={{ dark: Truck }}
+					description={{
+						enabled: 'Сейчас учитываются',
+						disabled: 'Сейчас не учитываются'
+					}}
+					switchable={isTransportCost}
+					setSwitchable={setIsTransportCost}
+					title='Транспортные расходы'
+					inputValue={transportCost.toString()}
+					onInputChange={e => handleCostChange(e, setTransportCost)}
+				/>
 
-			<Modal
-				title='Ошибка'
-				buttons={{
-					blue: { onClick: () => setIsModalOpen(false), title: 'Ок' }
-				}}
-				onClose={() => setIsModalOpen(false)}
-				description={error as string}
-				isOpen={isModalOpen}
-			/>
+				<Switcher
+					icons={{ dark: Trash }}
+					description={{
+						enabled: 'Сейчас учитывается',
+						disabled: 'Сейчас не учитывается'
+					}}
+					switchable={isTrashCost}
+					setSwitchable={setIsTrashCost}
+					title='Вынос мусора'
+					inputValue={trashCost.toString()}
+					onInputChange={e => handleCostChange(e, setTrashCost)}
+				/>
+
+				<Switcher
+					icons={{ dark: Search }}
+					description={{
+						enabled: 'Поиск включен',
+						disabled: 'Поиск отключен'
+					}}
+					switchable={isSearchMethod}
+					setSwitchable={setIsSearchMethod}
+					title='Отображение строки поиска'
+				/>
+
+				<Modal
+					title='Ошибка'
+					buttons={{
+						blue: { onClick: () => setIsModalOpen(false), title: 'Ок' }
+					}}
+					onClose={() => setIsModalOpen(false)}
+					description={error as string}
+					isOpen={isModalOpen}
+				/>
+			</div>
 		</div>
 	)
 }

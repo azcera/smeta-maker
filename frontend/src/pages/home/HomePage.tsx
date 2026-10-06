@@ -21,8 +21,7 @@ export default function HomePage() {
 		removePlace,
 		clearAll,
 		isTransportCost,
-		isTrashCost,
-		isMultiplePlaces
+		isTrashCost
 	} = useSmetaStore()
 
 	const [showAddPlace, setShowAddPlace] = useState(false)
@@ -107,7 +106,7 @@ export default function HomePage() {
 					onRemovePlace={removePlace}
 					onAddWorkClick={id => navigate(`/works/new?placeId=${id}`)}
 				/>
-				{places.length > 0 && !isMultiplePlaces ? null : (
+				{places.length > 0 ? null : (
 					<button
 						onClick={() => setShowAddPlace(true)}
 						className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer ${

@@ -1,5 +1,6 @@
-import { ArrowLeft, Save } from 'lucide-react'
+import { Save } from 'lucide-react'
 import type { RefObject, SubmitEvent } from 'react'
+import { Header } from '../../../components/layout/Header'
 
 interface WorkFormStepProps {
 	isNew: boolean
@@ -47,31 +48,21 @@ export function WorkFormStep({
 	}`
 
 	return (
-		<div className='space-y-5 max-w-md mx-auto'>
-			<div className='flex items-center gap-3'>
-				<button
-					onClick={onBack}
-					className={`p-2 -ml-2 rounded-xl cursor-pointer ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-slate-200'}`}
-				>
-					<ArrowLeft className='w-5 h-5' />
-				</button>
-				<div>
-					<h1 className='text-xl font-bold'>
-						{isNew ? 'Новая работа' : 'Редактирование'}
-					</h1>
-					{currentPlaceName && (
-						<p
-							className={`text-xs ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
-						>
-							{currentPlaceName}
-						</p>
-					)}
-				</div>
-			</div>
+		<div
+			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+		>
+			<Header
+				subtitle={currentPlaceName}
+				title={isNew ? 'Новая работа' : 'Редактирование'}
+				onBackClick={onBack}
+			/>
 
 			<form
 				onSubmit={onSubmit}
-				className={`rounded-2xl p-5 space-y-4 ${isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'}`}
+				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-2 pb-10 min-h-0'
+				style={{
+					paddingTop: 'calc(50px + 1rem + env(safe-area-inset-top))'
+				}}
 			>
 				<div>
 					<label

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Modal from '../../components/Modal'
 import { useSmetaStore } from '../../store/smetaStore'
 import type { ModalMessageType, NormalizedWork } from '../../types'
+import { useLockScroll } from '../../utils/hooks/useLockScroll'
 import { WorkFormStep } from './components/WorkFormStep'
 import { WorkSearchStep } from './components/WorkSearchStep'
 
@@ -129,16 +130,14 @@ export default function EditWorkPage() {
 	}
 
 	useEffect(() => {
-		if (step === 'search') {
-			document.body.style.overflow = 'hidden'
-		} else {
-			document.body.style.overflow = ''
-		}
+		document.body.style.overflow = 'hidden'
 
 		return () => {
 			document.body.style.overflow = ''
 		}
 	}, [step])
+
+	useLockScroll(true)
 
 	// ИСПРАВЛЕНО: Раньше стоял тип React.ChangeEvent, что приводило к ошибкам типов на форме
 	const handleSubmit = (e: SubmitEvent) => {

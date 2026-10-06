@@ -200,8 +200,7 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 				row.getCell(5).value = price
 				row.getCell(5).numFmt = '#,##0"р."'
 				row.getCell(6).value = {
-					formula: `D${currentRow}*E${currentRow}`,
-					result: sum
+					formula: `D${currentRow}*E${currentRow}`
 				}
 				row.eachCell((cell, num) => {
 					cell.alignment = {
@@ -271,8 +270,7 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 			color: { argb: `FF${whiteColor}` }
 		}
 		totalRow.getCell(6).value = {
-			formula: `SUM(F9:F${currentRow - 1})`,
-			result: totalSum
+			formula: `SUM(F9:F${currentRow - 1})`
 		}
 		totalRow.getCell(6).font = {
 			bold: true,
@@ -326,6 +324,7 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 
 		res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition')
 
+		await workbook.xlsx.writeBuffer()
 		await workbook.xlsx.write(res)
 		res.end()
 	} catch (err: any) {

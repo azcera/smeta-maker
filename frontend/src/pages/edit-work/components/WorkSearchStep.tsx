@@ -1,6 +1,9 @@
-import { ArrowLeft, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { Header } from '../../../components/layout/Header'
+import { useSmetaStore } from '../../../store/smetaStore'
 import type { NormalizedWork } from '../../../types'
+import { CategoryComponent } from './CategoryComponent'
 import SearchComponent from './SearchComponent'
 
 interface WorkSearchStepProps {
@@ -33,6 +36,8 @@ export function WorkSearchStep({
 	const [isHeaderVisible, setIsHeaderVisible] = useState(true)
 	const [isInputFocused, setIsInputFocused] = useState(false)
 	const lastScrollY = useRef(0)
+	const { isSearchMethod } = useSmetaStore()
+	const [openedCategory, setOpenedCategory] = useState<string | null>(null)
 
 	const inputClass = `w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
 		isDark
@@ -59,11 +64,19 @@ export function WorkSearchStep({
 
 		lastScrollY.current = currentScrollY
 	}
+	const uniqueCategories: string[] = [
+		...new Set(filteredWorks.map(work => work.category))
+	]
 
 	return (
-		<div className='max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full bg-neutral-950'>
-			<div
-				className={`bg-neutral-950 fixed top-0 left-0 right-0 z-20 px-4 pb-4 space-y-4 max-w-md mx-auto ${
+		<div
+			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+		>
+			<Header
+				onBackClick={openedCategory ? () => setOpenedCategory(null) : onBack}
+				subtitle={currentPlaceName}
+				title='Новая работа'
+				headerClasses={`${
 					isInputFocused
 						? 'translate-y-0 opacity-100 transition-none'
 						: 'transition-transform duration-300 ease-in-out'
@@ -72,74 +85,102 @@ export function WorkSearchStep({
 						? '-translate-y-full opacity-0 pointer-events-none'
 						: 'translate-y-0 opacity-100'
 				}`}
-				style={{
-					paddingTop: 'calc(1rem + env(safe-area-inset-top))'
-				}}
-			>
-				<div className='flex items-center gap-3'>
-					<button
-						onClick={onBack}
-						className={`p-2 -ml-2 rounded-xl cursor-pointer ${isDark ? 'hover:bg-neutral-800' : 'hover:bg-slate-200'}`}
-					>
-						<ArrowLeft className='w-5 h-5' />
-					</button>
-					<div>
-						<h1 className='text-xl font-bold'>Новая работа</h1>
-						{currentPlaceName && (
-							<p
-								className={`text-xs ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
-							>
-								{currentPlaceName}
+				child={
+					<>
+						{isSearchMethod ? (
+							<div className='relative'>
+								<Search
+									className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-neutral-500' : 'text-slate-400'}`}
+								/>
+								<input
+									value={query}
+									onChange={e => setQuery(e.target.value)}
+									placeholder='Начните вводить название...'
+									className={`${inputClass} pl-11`}
+									ref={nameInputRef}
+									onFocus={() => {
+										setIsHeaderVisible(true)
+										setIsInputFocused(true)
+										window.scrollTo(0, 0)
+										document.body.scrollTop = 0
+									}}
+									onBlur={() => setIsInputFocused(false)}
+								/>
+							</div>
+						) : null}
+
+						{loading && (
+							<p className='text-sm text-center text-neutral-400'>
+								Загрузка базы...
 							</p>
 						)}
-					</div>
-				</div>
-
-				<div className='relative'>
-					<Search
-						className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-neutral-500' : 'text-slate-400'}`}
-					/>
-					<input
-						value={query}
-						onChange={e => setQuery(e.target.value)}
-						placeholder='Начните вводить название...'
-						className={`${inputClass} pl-11`}
-						ref={nameInputRef}
-						onFocus={() => {
-							setIsHeaderVisible(true)
-							setIsInputFocused(true)
-							window.scrollTo(0, 0)
-							document.body.scrollTop = 0
-						}}
-						onBlur={() => setIsInputFocused(false)}
-					/>
-				</div>
-
-				{loading && (
-					<p className='text-sm text-center text-neutral-400'>
-						Загрузка базы...
-					</p>
-				)}
-				{error && <p className='text-sm text-center text-red-400'>{error}</p>}
-			</div>
+						{error && (
+							<p className='text-sm text-center text-red-400'>{error}</p>
+						)}
+					</>
+				}
+			/>
 
 			<div
 				onScroll={handleScroll}
-				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-2 pb-6 min-h-0'
+				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-2 pb-10 min-h-0'
 				style={{
-					paddingTop: 'calc(120px + 1rem + env(safe-area-inset-top))'
+					paddingTop: isSearchMethod
+						? 'calc(120px + 1rem + env(safe-area-inset-top))'
+						: 'calc(50px + 1rem + env(safe-area-inset-top))'
 				}}
 			>
 				{query.length > 1 &&
 					!loading &&
 					filteredWorks.length > 0 &&
-					filteredWorks.slice(0, 50).map(item => (
-						<SearchComponent
-							key={item.id || item.name}
-							item={item}
-							onSelectWork={onSelectWork}
+					filteredWorks.slice(0, 50).map(item => {
+						if (openedCategory && item.category != openedCategory) return null
+						return (
+							<SearchComponent
+								key={item.id || item.name}
+								item={item}
+								onSelectWork={onSelectWork}
+							/>
+						)
+					})}
+				{query.length < 1 &&
+					!openedCategory &&
+					uniqueCategories.map(c => (
+						<CategoryComponent
+							key={c}
+							item={c}
+							onSelectCategory={() => setOpenedCategory(c)}
 						/>
 					))}
+				{query.length < 1 && !openedCategory && (
+					<button
+						onClick={onGoToManual}
+						className='px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium cursor-pointer'
+					>
+						Создать вручную
+					</button>
+				)}
+
+				{query.length === 1 && (
+					<div
+						className={`items-center justify-center text-center text-s ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
+					>
+						Продолжайте вводить поисковый запрос
+					</div>
+				)}
+
+				{(query.length > 1 || openedCategory) &&
+					query.length != 1 &&
+					filteredWorks.map(item => {
+						if (item.category != openedCategory) return null
+						return (
+							<SearchComponent
+								key={item.id || item.name}
+								item={item}
+								onSelectWork={onSelectWork}
+							/>
+						)
+					})}
 
 				{query.length > 1 && !loading && filteredWorks.length === 0 && (
 					<div className='text-center py-8'>

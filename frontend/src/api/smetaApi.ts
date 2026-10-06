@@ -2,7 +2,6 @@ import type { DbWork, NormalizedWork } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL
 
-
 /** Получить все работы из БД */
 export async function fetchWorks(): Promise<DbWork[]> {
 	const res = await fetch(`${API_URL}/list`)
@@ -59,5 +58,7 @@ export async function generateSmeta(payload: {
 	}
 
 	const blob = await res.blob()
-	return blob
+	return new Blob([blob], {
+		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+	})
 }
