@@ -123,10 +123,10 @@ export function WorkSearchStep({
 
 			<div
 				onScroll={handleScroll}
-				className='app-scroll no-scrollbar flex flex-col w-full flex-1 space-y-2 pb-10'
+				className='app-scroll px-4 no-scrollbar flex flex-col w-full flex-1 space-y-2 pb-10'
 				style={{
 					paddingTop: isSearchMethod
-						? 'calc(120px + 1rem + env(safe-area-inset-top, 0px))'
+						? 'calc(122px + 1rem + env(safe-area-inset-top, 0px))'
 						: 'calc(56px + 1rem + env(safe-area-inset-top, 0px))'
 				}}
 			>

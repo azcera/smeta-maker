@@ -1,7 +1,11 @@
 // pages/HomePage.tsx
 import { Plus } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { createSearchParams, useNavigate } from 'react-router-dom'
+import {
+	createSearchParams,
+	useNavigate,
+	useSearchParams
+} from 'react-router-dom'
 import Modal from '../../components/Modal'
 import PlaceModal from '../../components/PlaceModal'
 import { useSmetaStore } from '../../store/smetaStore'
@@ -45,9 +49,12 @@ export default function HomePage() {
 
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 
+	const [searchParams, _] = useSearchParams()
+
 	useSmartScrollToBottom({
 		containerRef: scrollContainerRef,
-		itemsCount: places.reduce((s, p) => s + p.works.length, 0) + places.length
+		itemsCount: places.reduce((s, p) => s + p.works.length, 0) + places.length,
+		enabled: searchParams.get('scroll') === 'true' ? true : false
 	})
 
 	const allWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)

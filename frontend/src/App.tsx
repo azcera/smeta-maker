@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './components/layout/Layout'
+import ScrollToTop from './components/ScrollToTop'
 import { ErrorPage } from './components/ui/ErrorPage'
 import EditWorkPage from './pages/edit-work/EditWorkPage'
 import HomePage from './pages/home/HomePage'
@@ -27,6 +28,7 @@ function App() {
 	}
 	return (
 		<BrowserRouter>
+			<ScrollToTop />
 			<Routes>
 				<Route element={<Layout />}>
 					<Route

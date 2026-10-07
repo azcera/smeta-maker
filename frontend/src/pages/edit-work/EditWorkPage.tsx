@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+	createSearchParams,
+	useNavigate,
+	useParams,
+	useSearchParams
+} from 'react-router-dom'
 import Modal from '../../components/Modal'
 import { useSmetaStore } from '../../store/smetaStore'
 import type { ModalMessageType, NormalizedWork } from '../../types'
@@ -155,7 +160,11 @@ export default function EditWorkPage() {
 		} else if (id) {
 			updateWork(placeId, id, workData)
 		}
-		navigate('/')
+
+		navigate({
+			pathname: '/',
+			search: isNew ? `?${createSearchParams({ scroll: 'true' })}` : ''
+		})
 	}
 
 	// Отрендерить нужный шаг
