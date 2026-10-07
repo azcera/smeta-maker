@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Header } from '../../components/layout/Header'
 import Modal from '../../components/Modal'
 import type { ViewTypes } from '../../store/smetaStore'
-import { useLockScroll } from '../../utils/hooks/useLockScroll'
 import { FileImporter } from './components/FileImporter'
 import ListSwitcher, { type SwitcherOption } from './components/ListSwitcher'
 import Switcher from './components/Switcher'
@@ -42,9 +41,16 @@ export default function SettingsPage() {
 	} = useSettings()
 
 	useEffect(() => {
-		if (searchParams.get('focus') === 'true') {
-			inputNameRef.current?.focus()
-		}
+		if (searchParams.get('focus') !== 'true') return
+		const t = setTimeout(() => {
+			inputNameRef.current?.focus({ preventScroll: true })
+			// при необходимости проскроллить внутри app-scroll:
+			inputNameRef.current?.scrollIntoView({
+				block: 'center',
+				behavior: 'smooth'
+			})
+		}, 200)
+		return () => clearTimeout(t)
 	}, [searchParams])
 
 	useEffect(() => {
@@ -56,11 +62,11 @@ export default function SettingsPage() {
 		{ id: 'TOTAL', name: 'Общая стоимость' }
 	]
 
-	useLockScroll(true)
-
 	return (
 		<div
-			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+			className={`max-w-md mx-auto flex flex-col h-full overflow-hidden relative w-full ${
+				isDark ? 'bg-neutral-950' : 'bg-slate-100'
+			}`}
 		>
 			{/* Хедер */}
 			<Header
@@ -69,9 +75,11 @@ export default function SettingsPage() {
 				subtitle='Параметры сметы'
 			/>
 			<div
-				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-5 min-h-0 pb-10'
+				className='app-scroll no-scrollbar flex flex-col w-full flex-1 space-y-5 px-4'
 				style={{
-					paddingTop: 'calc(50px + 1rem + env(safe-area-inset-top))'
+					paddingTop: 'calc(56px + 1rem + env(safe-area-inset-top, 0px))',
+					// НЕТ 140px — бара снизу нет
+					paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))'
 				}}
 			>
 				{/* Название объекта */}

@@ -45,9 +45,6 @@ export function useSettings() {
 					store.setIsTrashCost(true)
 					store.setTrashCost(json.data.trashCost)
 				}
-				if (Object.entries(json.data.places).length > 1) {
-					store.setIsMultiplePlaces(true)
-				}
 				store.addParsedWorks(json.data.places)
 			}
 		} catch (err: any) {

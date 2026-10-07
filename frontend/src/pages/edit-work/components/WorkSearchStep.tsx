@@ -70,7 +70,9 @@ export function WorkSearchStep({
 
 	return (
 		<div
-			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+			className={`max-w-md mx-auto flex flex-col h-full overflow-hidden relative w-full ${
+				isDark ? 'bg-neutral-950' : 'bg-slate-100'
+			}`}
 		>
 			<Header
 				onBackClick={openedCategory ? () => setOpenedCategory(null) : onBack}
@@ -101,8 +103,6 @@ export function WorkSearchStep({
 									onFocus={() => {
 										setIsHeaderVisible(true)
 										setIsInputFocused(true)
-										window.scrollTo(0, 0)
-										document.body.scrollTop = 0
 									}}
 									onBlur={() => setIsInputFocused(false)}
 								/>
@@ -123,11 +123,11 @@ export function WorkSearchStep({
 
 			<div
 				onScroll={handleScroll}
-				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-2 pb-10 min-h-0'
+				className='app-scroll no-scrollbar flex flex-col w-full flex-1 space-y-2 pb-10'
 				style={{
 					paddingTop: isSearchMethod
-						? 'calc(120px + 1rem + env(safe-area-inset-top))'
-						: 'calc(50px + 1rem + env(safe-area-inset-top))'
+						? 'calc(120px + 1rem + env(safe-area-inset-top, 0px))'
+						: 'calc(56px + 1rem + env(safe-area-inset-top, 0px))'
 				}}
 			>
 				{query.length > 1 &&

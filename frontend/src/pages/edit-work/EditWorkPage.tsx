@@ -3,7 +3,6 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Modal from '../../components/Modal'
 import { useSmetaStore } from '../../store/smetaStore'
 import type { ModalMessageType, NormalizedWork } from '../../types'
-import { useLockScroll } from '../../utils/hooks/useLockScroll'
 import { WorkFormStep } from './components/WorkFormStep'
 import { WorkSearchStep } from './components/WorkSearchStep'
 
@@ -92,17 +91,28 @@ export default function EditWorkPage() {
 
 	useEffect(() => {
 		if (step !== 'search' || !dbWorksLoaded) return
-		const timer = setTimeout(() => nameInputRef.current?.focus(), 150)
-		return () => clearTimeout(timer)
+		// только если поле реально в DOM; на iOS после navigate
+		// надёжнее фокусировать по клику «Новая работа», но delay помогает
+		const t = setTimeout(() => {
+			nameInputRef.current?.focus({ preventScroll: true })
+		}, 200)
+		return () => clearTimeout(t)
 	}, [step, dbWorksLoaded])
 
 	useEffect(() => {
-		if (step === 'form') {
-			setTimeout(() => {
-				quantityRef.current?.focus()
-				quantityRef.current?.select()
-			}, 50)
-		}
+		if (step !== 'form') return
+		const t = setTimeout(() => {
+			const el = quantityRef.current
+			if (!el) return
+			el.focus({ preventScroll: true })
+			// select на type=number на iOS капризный — оберни в try
+			try {
+				el.select()
+			} catch {
+				/* ignore */
+			}
+		}, 100)
+		return () => clearTimeout(t)
 	}, [step])
 
 	const filtered = dbWorks.filter(w => {
@@ -128,16 +138,6 @@ export default function EditWorkPage() {
 		setFromDb(false)
 		setStep('form')
 	}
-
-	useEffect(() => {
-		document.body.style.overflow = 'hidden'
-
-		return () => {
-			document.body.style.overflow = ''
-		}
-	}, [step])
-
-	useLockScroll(true)
 
 	// ИСПРАВЛЕНО: Раньше стоял тип React.ChangeEvent, что приводило к ошибкам типов на форме
 	const handleSubmit = (e: SubmitEvent) => {

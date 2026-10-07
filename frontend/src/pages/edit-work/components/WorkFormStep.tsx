@@ -49,7 +49,7 @@ export function WorkFormStep({
 
 	return (
 		<div
-			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+			className={`max-w-md mx-auto flex flex-col h-full overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
 		>
 			<Header
 				subtitle={currentPlaceName}
@@ -59,9 +59,9 @@ export function WorkFormStep({
 
 			<form
 				onSubmit={onSubmit}
-				className='no-scrollbar flex flex-col overflow-y-auto w-full h-full space-y-2 pb-10 min-h-0'
+				className='app-scroll no-scrollbar flex flex-col w-full flex-1 space-y-4 px-4 pb-10'
 				style={{
-					paddingTop: 'calc(50px + 1rem + env(safe-area-inset-top))'
+					paddingTop: 'calc(56px + 1rem + env(safe-area-inset-top, 0px))'
 				}}
 			>
 				<div>

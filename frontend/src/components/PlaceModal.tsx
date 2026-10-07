@@ -20,11 +20,14 @@ export default function PlaceModal({
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
-		if (open) {
-			setName(value)
-			setTimeout(() => inputRef.current?.focus(), 50)
-		}
-	}, [open])
+		if (!open) return
+		setName(value)
+		// после paint модалки
+		const t = requestAnimationFrame(() => {
+			inputRef.current?.focus()
+		})
+		return () => cancelAnimationFrame(t)
+	}, [open, value])
 
 	if (!open) return null
 

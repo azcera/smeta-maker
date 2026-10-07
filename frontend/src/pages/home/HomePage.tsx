@@ -6,7 +6,6 @@ import Modal from '../../components/Modal'
 import PlaceModal from '../../components/PlaceModal'
 import { useSmetaStore } from '../../store/smetaStore'
 import type { ModalMessageType } from '../../types'
-import { useLockScroll } from '../../utils/hooks/useLockScroll'
 import { BottomActionBar } from './components/BottomActionBar'
 import { PlaceList } from './components/PlaceList'
 import { useSmartScrollToBottom } from './hooks/useSmartScrollToBottom'
@@ -48,10 +47,8 @@ export default function HomePage() {
 
 	useSmartScrollToBottom({
 		containerRef: scrollContainerRef,
-		triggerDeps: places
+		itemsCount: places.reduce((s, p) => s + p.works.length, 0) + places.length
 	})
-
-	useLockScroll(true)
 
 	const allWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)
 	const total =
@@ -71,13 +68,19 @@ export default function HomePage() {
 
 	return (
 		<div
-			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full ${isDark ? 'bg-neutral-950' : 'bg-slate-100'}`}
+			className={`max-w-md mx-auto flex flex-col h-full overflow-hidden relative w-full ${
+				isDark ? 'bg-neutral-950' : 'bg-slate-100'
+			}`}
 		>
 			<div
 				ref={scrollContainerRef}
-				className='no-scrollbar flex items-center flex-col overflow-y-auto w-full h-full space-y-5 min-h-0 pb-10'
+				className='app-scroll no-scrollbar flex flex-col items-center w-full flex-1 space-y-5 px-4'
 				style={{
-					paddingBottom: 'calc(200px + 1rem + env(safe-area-inset-top))'
+					// ВАЖНО: top safe-area, на Home нет Header
+					paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))',
+					// только высота бара (~112–120px), БЕЗ повторного safe-area
+					// safe-area уже внутри BottomActionBar
+					paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))'
 				}}
 			>
 				<PlaceList
