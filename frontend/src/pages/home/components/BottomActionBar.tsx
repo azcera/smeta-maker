@@ -20,19 +20,10 @@ export function BottomActionBar({
 	const { isDark, viewType, setViewType } = useSmetaStore()
 
 	return (
-		<div
-			className='fixed bottom-0 left-0 right-0 z-20'
-			style={{
-				// фон до самого низа экрана (под home indicator)
-				paddingLeft: 'env(safe-area-inset-left, 0px)',
-				paddingRight: 'env(safe-area-inset-right, 0px)',
-				backgroundColor: isDark ? '#0a0a0a' : '#f1f5f9'
-			}}
-		>
+		<div className='fixed bottom-0 left-0 right-0 z-20'>
 			<div
 				className='max-w-md mx-auto px-4 pt-3 flex flex-col'
 				style={{
-					// кнопки над индикатором — один раз
 					paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'
 				}}
 			>

@@ -3,15 +3,18 @@ import { type RefObject, useEffect, useRef } from 'react'
 interface UseSmartScrollProps {
 	containerRef: RefObject<HTMLDivElement | null>
 	itemsCount: number
+	enabled: boolean
 }
 
 export const useSmartScrollToBottom = ({
 	containerRef,
-	itemsCount
+	itemsCount,
+	enabled
 }: UseSmartScrollProps) => {
 	const prevCountRef = useRef(itemsCount)
 
 	useEffect(() => {
+		if (!enabled) return
 		const container = containerRef.current
 		if (!container) return
 
@@ -30,8 +33,7 @@ export const useSmartScrollToBottom = ({
 			requestAnimationFrame(() => {
 				container.scrollTo({
 					top: container.scrollHeight,
-					// на iOS smooth часто дёргается — можно 'auto'
-					behavior: 'smooth'
+					behavior: 'auto'
 				})
 			})
 		})
