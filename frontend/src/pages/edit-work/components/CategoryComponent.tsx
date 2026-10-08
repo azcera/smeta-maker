@@ -9,7 +9,7 @@ interface Props {
 export function CategoryComponent({ item, onSelectCategory }: Props) {
 	const { isDark } = useSmetaStore()
 	return (
-		<button
+		<div
 			key={item}
 			onClick={onSelectCategory}
 			className={`w-full flex justify-between text-left px-4 py-3 rounded-xl border cursor-pointer transition-colors ${
@@ -20,6 +20,6 @@ export function CategoryComponent({ item, onSelectCategory }: Props) {
 		>
 			<p className='text-sm font-medium'>{item}</p>
 			<ChevronRight />
-		</button>
+		</div>
 	)
 }

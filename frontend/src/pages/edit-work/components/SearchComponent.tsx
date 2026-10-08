@@ -12,7 +12,7 @@ export default function SearchComponent({
 }: SearchComponentProps) {
 	const { isDark } = useSmetaStore()
 	return (
-		<button
+		<div
 			key={item.id}
 			onClick={() => onSelectWork(item)}
 			className={`w-full text-left px-4 py-3 rounded-xl border cursor-pointer transition-colors ${
@@ -28,6 +28,6 @@ export default function SearchComponent({
 				{item.unit} · {item.price.toLocaleString('ru-RU')} ₽
 				{item.category && ` · ${item.category}`}
 			</p>
-		</button>
+		</div>
 	)
 }

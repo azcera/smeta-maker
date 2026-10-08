@@ -9,14 +9,20 @@
 	}
 }
 
-body,
 html,
+body,
 :root {
-	background-color: #f3f4f6;
 	margin: 0;
-	height: max-content;
-	min-height: 100vh;
-	overflow-y: auto;
+	height: 100%;
+	min-height: 100dvh; /* или 100vh */
+	overflow: hidden; /* ← убираем скролл с body */
+	scrollbar-gutter: stable;
+}
+
+#root {
+	/* если у тебя есть корневой div */
+	height: 100%;
+	overflow: hidden;
 }
 
 .app-scroll {
