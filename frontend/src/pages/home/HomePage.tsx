@@ -26,7 +26,8 @@ export default function HomePage() {
 		removePlace,
 		clearAll,
 		isTransportCost,
-		isTrashCost
+		isTrashCost,
+		setIsReorder
 	} = useSmetaStore()
 
 	const [showAddPlace, setShowAddPlace] = useState(false)
@@ -54,7 +55,7 @@ export default function HomePage() {
 	useSmartScrollToBottom({
 		containerRef: scrollContainerRef,
 		itemsCount: places.reduce((s, p) => s + p.works.length, 0) + places.length,
-		enabled: searchParams.get('scroll') === 'true' ? true : false
+		enabled: searchParams.get('scroll') === 'true'
 	})
 
 	const allWorksCount = places.reduce((sum, p) => sum + p.works.length, 0)
@@ -75,13 +76,14 @@ export default function HomePage() {
 
 	return (
 		<div
+			onClick={() => setIsReorder(false)}
 			className={`max-w-md mx-auto flex flex-col h-full overflow-hidden relative w-full ${
 				isDark ? 'bg-neutral-950' : 'bg-slate-100'
 			}`}
 		>
 			<div
 				ref={scrollContainerRef}
-				className='app-scroll no-scrollbar flex flex-col items-center w-full flex-1 space-y-5 px-4'
+				className='app-scroll no-scrollbar flex flex-col min-h-0 items-center w-full flex-1 space-y-5 px-4'
 				style={{
 					// ВАЖНО: top safe-area, на Home нет Header
 					paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))',

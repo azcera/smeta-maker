@@ -47,6 +47,11 @@ interface SmetaStore {
 	isSearchMethod: boolean
 	setIsSearchMethod: (value: boolean) => void
 
+	isReorder: boolean
+	setIsReorder: (value: boolean) => void
+
+	reorderWork: (placeId: string, oldIndex: number, newIndex: number) => void
+
 	clearAll: () => void
 }
 
@@ -110,6 +115,9 @@ export const useSmetaStore = create<SmetaStore>()(
 					),
 					importedTable: null
 				})),
+
+			isReorder: false,
+			setIsReorder: value => set({ isReorder: value }),
 
 			dbWorks: [],
 			dbWorksLoaded: false,
@@ -187,6 +195,21 @@ export const useSmetaStore = create<SmetaStore>()(
 					),
 					importedTable: null
 				})),
+
+			reorderWork: (placeId, oldIndex, newIndex) =>
+				set(state => {
+					const places = state.places.map(place => {
+						if (place.id !== placeId) return place
+
+						const works = [...place.works]
+						const [moved] = works.splice(oldIndex, 1)
+						works.splice(newIndex, 0, moved)
+
+						return { ...place, works }
+					})
+
+					return { places, importedTable: null }
+				}),
 
 			isSearchMethod: true,
 			setIsSearchMethod: value => set({ isSearchMethod: value }),

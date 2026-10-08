@@ -26,7 +26,7 @@ export default function Layout() {
 
 	return (
 		<div
-			className={`flex-1 h-full w-full overflow-y-auto flex flex-col transition-colors ${
+			className={`flex-1 h-full w-full overflow-hidden flex flex-col transition-colors ${
 				isDark ? 'bg-neutral-950 text-white' : 'bg-slate-100 text-slate-900'
 			}`}
 		>

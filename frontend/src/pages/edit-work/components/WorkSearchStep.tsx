@@ -70,7 +70,7 @@ export function WorkSearchStep({
 
 	return (
 		<div
-			className={`max-w-md mx-auto flex flex-col h-full overflow-hidden relative w-full ${
+			className={`max-w-md mx-auto flex flex-col h-full min-h-0 overflow-hidden relative w-full ${
 				isDark ? 'bg-neutral-950' : 'bg-slate-100'
 			}`}
 		>
@@ -123,7 +123,7 @@ export function WorkSearchStep({
 
 			<div
 				onScroll={handleScroll}
-				className='app-scroll px-4 no-scrollbar flex flex-col w-full flex-1 space-y-2 pb-10'
+				className='app-scroll px-4 no-scrollbar flex flex-col w-full flex-1 min-h-0 space-y-2 pb-10'
 				style={{
 					paddingTop: isSearchMethod
 						? 'calc(122px + 1rem + env(safe-area-inset-top, 0px))'
