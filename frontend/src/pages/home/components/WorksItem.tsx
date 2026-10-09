@@ -11,6 +11,7 @@ import { useLongPress } from '../../../utils/hooks/useLongPress'
 interface Props {
 	place: Place
 	work: Work
+	id?: string
 	isOverlay?: boolean // ← новый проп
 }
 
@@ -31,7 +32,12 @@ function getUnitColor(unit: string) {
 	return UNIT_COLORS[key] || '#4B5563'
 }
 
-export default function WorkItem({ place, work, isOverlay = false }: Props) {
+export default function WorkItem({
+	place,
+	work,
+	isOverlay = false,
+	id
+}: Props) {
 	const { removeWork, viewType, isReorder, setIsReorder } = useSmetaStore()
 	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const longPressedRef = useRef(false)
@@ -77,6 +83,7 @@ export default function WorkItem({ place, work, isOverlay = false }: Props) {
 	}
 	return (
 		<div
+			id={id}
 			ref={isOverlay ? undefined : setNodeRef}
 			style={style}
 			className={isOverlay ? 'cursor-grabbing' : ''}
@@ -108,6 +115,7 @@ export default function WorkItem({ place, work, isOverlay = false }: Props) {
 				{!isOverlay && (
 					<>
 						<button
+							id={isReorder ? 'reorderIcon' : undefined}
 							{...(isReorder ? { ...attributes, ...listeners } : {})}
 							onClick={
 								isReorder

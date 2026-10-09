@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { InteractiveTour } from './components/InteractiveTour'
 import Layout from './components/layout/Layout'
 import ScrollToTop from './components/ScrollToTop'
 import { ErrorPage } from './components/ui/ErrorPage'
@@ -26,6 +27,7 @@ function App() {
 			/>
 		)
 	}
+
 	return (
 		<BrowserRouter>
 			<ScrollToTop />
@@ -58,6 +60,7 @@ function App() {
 					/>
 				</Route>
 			</Routes>
+			<InteractiveTour />
 		</BrowserRouter>
 	)
 }

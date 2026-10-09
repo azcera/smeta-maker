@@ -49,6 +49,7 @@ export function WorkFormStep({
 
 	return (
 		<div
+			id='editingPage'
 			className={`max-w-md mx-auto flex flex-col h-dvh overflow-hidden relative w-full touch-none ${
 				isDark ? 'bg-neutral-950' : 'bg-slate-100'
 			}`}
@@ -117,6 +118,7 @@ export function WorkFormStep({
 							Кол-во
 						</label>
 						<input
+							id='countInput'
 							ref={quantityRef}
 							disabled={unit === 'комплекс'}
 							type='number'
@@ -161,6 +163,7 @@ export function WorkFormStep({
 				</div>
 
 				<button
+					id='addWorkButton'
 					type='submit'
 					className={`w-full h-12 font-semibold rounded-2xl flex items-center justify-center gap-2 cursor-pointer ${
 						isDark

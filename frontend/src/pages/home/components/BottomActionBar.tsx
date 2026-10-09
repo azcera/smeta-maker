@@ -52,6 +52,7 @@ export function BottomActionBar({
 				<div className='flex items-center gap-3'>
 					{!isReorder && (
 						<button
+							id='deleteAllButton'
 							type='button'
 							onClick={onDeleteClick}
 							className='h-12 px-4 rounded-2xl bg-red-500/90 hover:bg-red-500  flex items-center justify-center transition-colors cursor-pointer shrink-0 '
@@ -62,6 +63,7 @@ export function BottomActionBar({
 
 					<button
 						type='button'
+						id={isReorder ? 'saveReorder' : ''}
 						onClick={isReorder ? () => setIsReorder(false) : onSaveClick}
 						disabled={saving || allWorksCount === 0}
 						className={`flex-1 h-12 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
@@ -87,6 +89,7 @@ export function BottomActionBar({
 
 					{!isReorder && (
 						<Link
+							id='settingsButton'
 							to='/settings'
 							className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
 								isDark

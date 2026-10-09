@@ -76,6 +76,7 @@ export default function HomePage() {
 
 	return (
 		<div
+			id='homePage'
 			onClick={() => setIsReorder(false)}
 			className={`max-w-md mx-auto flex flex-col h-full overflow-hidden relative w-full ${
 				isDark ? 'bg-neutral-950' : 'bg-slate-100'
@@ -85,10 +86,7 @@ export default function HomePage() {
 				ref={scrollContainerRef}
 				className='app-scroll no-scrollbar flex flex-col min-h-0 items-center w-full flex-1 space-y-5 px-4'
 				style={{
-					// ВАЖНО: top safe-area, на Home нет Header
 					paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))',
-					// только высота бара (~112–120px), БЕЗ повторного safe-area
-					// safe-area уже внутри BottomActionBar
 					paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))'
 				}}
 			>
@@ -99,6 +97,7 @@ export default function HomePage() {
 					onAddWorkClick={id => navigate(`/works/new?placeId=${id}`)}
 				/>
 				<button
+					id='addPlaceButton'
 					onClick={() => setShowAddPlace(true)}
 					className={`shrink-0 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors cursor-pointer ${
 						isDark
@@ -117,7 +116,8 @@ export default function HomePage() {
 				saving={saving}
 				onSaveClick={handleSave}
 				onDeleteClick={() => {
-					if (allWorksCount > 0 || objectName.length > 0) setIsDeleteModal(true)
+					if (allWorksCount > 0 || objectName.length > 0 || places.length > 0)
+						setIsDeleteModal(true)
 				}}
 			/>
 

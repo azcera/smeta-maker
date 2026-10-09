@@ -122,6 +122,7 @@ export function WorkSearchStep({
 			/>
 
 			<div
+				id={openedCategory ? 'worksToSelect' : 'categoriesToSelect'}
 				onScroll={handleScroll}
 				className='app-scroll px-4 no-scrollbar flex flex-col w-full flex-1 min-h-0 space-y-2 pb-10'
 				style={{

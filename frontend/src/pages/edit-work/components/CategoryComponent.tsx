@@ -10,6 +10,7 @@ export function CategoryComponent({ item, onSelectCategory }: Props) {
 	const { isDark } = useSmetaStore()
 	return (
 		<div
+			id='categoriesToSelect'
 			key={item}
 			onClick={onSelectCategory}
 			className={`w-full flex justify-between text-left px-4 py-3 rounded-xl border cursor-pointer transition-colors ${

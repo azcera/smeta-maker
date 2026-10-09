@@ -85,6 +85,7 @@ export default function PlaceModal({
 							Название помещения
 						</label>
 						<input
+							id='placeModalInput'
 							ref={inputRef}
 							value={name}
 							spellCheck
@@ -117,6 +118,7 @@ export default function PlaceModal({
 							Отмена
 						</button>
 						<button
+							id='bluePlaceModalButton'
 							type='submit'
 							disabled={name.trim() === value}
 							className={`flex-1 h-11 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors disabled:opacity-50  ${name.trim() === value ? 'cursor-not-allowed' : 'cursor-pointer'}`}

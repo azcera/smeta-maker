@@ -80,6 +80,7 @@ export default function Modal({
 					) : null}
 
 					<button
+						id='blueModalButton'
 						type='button'
 						onClick={buttons.blue.onClick}
 						className='flex-1 h-11 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed'

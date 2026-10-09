@@ -179,6 +179,13 @@ export function PlaceList({
 										>
 											{place.works.map(work => (
 												<WorkItem
+													id={
+														work.id === place.works[0].id
+															? 'firstWorkItem'
+															: work.id === place.works[1].id
+																? 'secondWorkItem'
+																: undefined
+													}
 													key={work.id}
 													place={place}
 													work={work}
@@ -204,6 +211,7 @@ export function PlaceList({
 
 						{/* Кнопка добавления работы */}
 						<button
+							id='addWorkButton'
 							onClick={() => onAddWorkClick(place.id)}
 							className={`${isCollapsed ? 'hidden' : ''} w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
 								isDark

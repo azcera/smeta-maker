@@ -50,3 +50,5 @@ body,
 .animate-wiggle {
 	animation: wiggle 0.35s ease-in-out infinite;
 }
+
+@import 'tour';
