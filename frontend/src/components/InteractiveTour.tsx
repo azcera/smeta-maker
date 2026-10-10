@@ -237,6 +237,8 @@ export function InteractiveTour() {
 					},
 					onHighlightStarted: () => {
 						document.body.classList.add('tour-allow-all-clicks')
+						const { loadDbWorks } = useSmetaStore.getState()
+						loadDbWorks()
 					},
 					onHighlighted: (_e, _, { driver, index }) => {
 						if (typeof index === 'number') {
@@ -630,7 +632,6 @@ export function InteractiveTour() {
 				// 16. Конец
 				{
 					element: '#endOfTour',
-					waitForElement: 3000,
 					popover: {
 						title: 'Поздравляю! Обучение окончено.',
 						description:
