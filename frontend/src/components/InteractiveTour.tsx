@@ -504,18 +504,25 @@ export function InteractiveTour() {
 						description:
 							'Ты научился добавлять элементы и менять их местами, а теперь ты можешь приступать к созданию собственных смет.',
 						side: 'bottom',
-						showButtons: ['next']
+						showButtons: ['next'],
+						doneBtnText: 'Готово!',
+						onNextClick: (_el, _step, { driver }) => {
+							localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
+							localStorage.removeItem(TOUR_STEP_KEY)
+							isNavigatingRef.current = false
+							driver.destroy()
+						}
 					}
 				}
 			],
 
 			onDestroyed: () => {
-				// При переходе на другую страницу — ничего не трогаем
+				document.body.classList.remove('tour-allow-all-clicks')
+
 				if (isNavigatingRef.current) {
-					return // ← НЕ сбрасываем флаг здесь
+					return
 				}
 
-				// Тур реально закончен
 				localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
 				localStorage.removeItem(TOUR_STEP_KEY)
 			}
@@ -525,6 +532,7 @@ export function InteractiveTour() {
 
 		const timer = setTimeout(() => {
 			driverObj.drive(startIndex)
+			isNavigatingRef.current = false // ← обязательно
 		}, 600)
 
 		return () => {
