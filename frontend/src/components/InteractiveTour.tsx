@@ -54,6 +54,8 @@ export function InteractiveTour() {
 						showButtons: []
 					},
 					onHighlighted: (element, _, { driver }) => {
+						const { clearAll } = useSmetaStore.getState()
+						clearAll()
 						const btn = element as HTMLElement
 						if (!btn) return
 
