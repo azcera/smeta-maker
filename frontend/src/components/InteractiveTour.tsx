@@ -7,26 +7,81 @@ import { useSmetaStore } from '../store/smetaStore'
 const TOUR_COMPLETED_KEY = 'hasSeenInteractiveTour'
 const TOUR_STEP_KEY = 'onboarding-step'
 
+/** Какой pathname нужен для шага (index) */
+const STEP_PATH: Record<number, string | RegExp> = {
+	0: '/',
+	1: '/',
+	2: '/',
+	3: '/',
+	4: /^\/works/, // категории
+	5: /^\/works/, // работы
+	6: /^\/works/, // редактирование
+	7: /^\/works/, // сохранить работу
+	8: '/', // secondWorkItem
+	9: '/', // firstWorkItem
+	10: '/', // long-press
+	11: '/', // reorder
+	12: '/', // save reorder
+	13: '/', // homePage
+	14: '/', // deleteAll
+	15: '/', // blueModal
+	16: '/' // end
+}
+
+function pathMatches(stepIndex: number, pathname: string) {
+	const rule = STEP_PATH[stepIndex]
+	if (rule == null) return true
+	if (typeof rule === 'string') return pathname === rule
+	return rule.test(pathname)
+}
+
+/** Вызвать из UI: «Пропустить обучение» */
+export function skipTour() {
+	localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
+	localStorage.removeItem(TOUR_STEP_KEY)
+	document.body.classList.remove('tour-allow-all-clicks')
+	window.dispatchEvent(new Event('tour:skip'))
+}
+
 export function InteractiveTour() {
 	const location = useLocation()
 	const driverRef = useRef<ReturnType<typeof driver> | null>(null)
 	const isNavigatingRef = useRef(false)
 
+	// Кнопка «Пропустить»
+	useEffect(() => {
+		const onSkip = () => {
+			isNavigatingRef.current = false
+			driverRef.current?.destroy()
+			driverRef.current = null
+		}
+		window.addEventListener('tour:skip', onSkip)
+		return () => window.removeEventListener('tour:skip', onSkip)
+	}, [])
+
 	useEffect(() => {
 		if (localStorage.getItem(TOUR_COMPLETED_KEY) === 'true') return
+
 		const { isDark } = useSmetaStore.getState()
 		const savedStep = localStorage.getItem(TOUR_STEP_KEY)
-		const isStartPage = location.pathname === '/' // ← твоя стартовая страница
+		const isStartPage = location.pathname === '/'
 
-		// Тур ещё не начат и мы не на стартовой странице
+		// Тур ещё не начат и мы не на старте
 		if (savedStep === null && !isStartPage) return
 
+		const startIndex = savedStep !== null ? Number(savedStep) : 0
+
+		// Страница не подходит под текущий шаг — не вешаем overlay
+		if (!pathMatches(startIndex, location.pathname)) {
+			document.body.classList.remove('tour-allow-all-clicks')
+			return
+		}
+
 		if (driverRef.current) {
+			isNavigatingRef.current = true
 			driverRef.current.destroy()
 			driverRef.current = null
 		}
-
-		const startIndex = savedStep !== null ? Number(savedStep) : 0
 
 		const driverObj = driver({
 			showProgress: true,
@@ -42,20 +97,25 @@ export function InteractiveTour() {
 			popoverClass: isDark
 				? 'smeta-tour-popover smeta-tour-popover--dark'
 				: 'smeta-tour-popover',
+
 			steps: [
-				// 1. Кнопка добавить помещение
+				// 0. Кнопка добавить помещение
 				{
 					element: '#addPlaceButton',
-
 					popover: {
 						title: 'Создай первое помещение',
 						description: 'Нажми на эту кнопку, чтобы создать новое помещение',
 						side: 'bottom',
 						showButtons: []
 					},
-					onHighlighted: (element, _, { driver }) => {
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const { clearAll } = useSmetaStore.getState()
 						clearAll()
+
 						const btn = element as HTMLElement
 						if (!btn) return
 
@@ -67,7 +127,7 @@ export function InteractiveTour() {
 					}
 				},
 
-				// 2. Инпут в модалке
+				// 1. Инпут в модалке
 				{
 					element: '#placeModalInput',
 					waitForElement: 5000,
@@ -78,7 +138,11 @@ export function InteractiveTour() {
 						side: 'right',
 						showButtons: []
 					},
-					onHighlighted: (element, _, { driver }) => {
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const input = element as HTMLInputElement
 						if (!input) return
 
@@ -93,13 +157,13 @@ export function InteractiveTour() {
 						nativeInputValueSetter?.call(input, '')
 						input.dispatchEvent(new Event('input', { bubbles: true }))
 
-						textToInsert.split('').forEach((char, index) => {
+						textToInsert.split('').forEach((char, i) => {
 							setTimeout(
 								() => {
 									nativeInputValueSetter?.call(input, input.value + char)
 									input.dispatchEvent(new Event('input', { bubbles: true }))
 								},
-								delayPerChar * (index + 1)
+								delayPerChar * (i + 1)
 							)
 						})
 
@@ -108,7 +172,7 @@ export function InteractiveTour() {
 					}
 				},
 
-				// 3. Кнопка «Добавить» в модалке
+				// 2. Сохранить помещение
 				{
 					element: '#bluePlaceModalButton',
 					waitForElement: 3000,
@@ -118,7 +182,11 @@ export function InteractiveTour() {
 						side: 'bottom',
 						showButtons: []
 					},
-					onHighlighted: (element, _, { driver }) => {
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const btn = element as HTMLElement
 						if (!btn) return
 
@@ -130,7 +198,7 @@ export function InteractiveTour() {
 					}
 				},
 
-				// 4. Кнопка добавить работу
+				// 3. Добавить работу → уход на /works/...
 				{
 					element: '#addWorkButton',
 					waitForElement: 4000,
@@ -147,21 +215,20 @@ export function InteractiveTour() {
 						btn.addEventListener(
 							'click',
 							() => {
-								// Следующий шаг = индекс 4 (#categoriesToSelect)
 								localStorage.setItem(TOUR_STEP_KEY, '4')
 								isNavigatingRef.current = true
 								driver.destroy()
-								// навигация на /works/new произойдёт сама
 							},
 							{ once: true }
 						)
 					}
 				},
 
-				// 5. Выбор категории — можно тыкать куда угодно
+				// 4. Категории
 				{
 					element: '#categoriesToSelect',
-					waitForElement: 4000,
+					waitForElement: 10000,
+					skipMissingElement: true,
 					popover: {
 						title: 'Выбери категорию',
 						description: 'Нажми на любую категорию, чтобы открыть список работ',
@@ -171,81 +238,95 @@ export function InteractiveTour() {
 					onHighlightStarted: () => {
 						document.body.classList.add('tour-allow-all-clicks')
 					},
-					onHighlighted: (_e, _, { driver }) => {
-						// Слушаем клик по ВСЕМУ контейнеру категорий (делегирование)
+					onHighlighted: (_e, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const root =
 							document.querySelector('#categoriesToSelect')?.parentElement ??
 							document.body
 
 						const handler = (e: Event) => {
 							const target = e.target as HTMLElement
-							// Если кликнули по категории (подстрой под свой селектор)
 							if (
 								target.closest(
 									'[data-category], .category-item, #categoriesToSelect'
 								)
 							) {
 								root.removeEventListener('click', handler, true)
-
 								setTimeout(() => driver.moveNext(), 400)
 							}
 						}
 
 						root.addEventListener('click', handler, true)
+					},
+					onDeselected: () => {
+						document.body.classList.remove('tour-allow-all-clicks')
 					}
 				},
-				// 6. Выбор работы
+
+				// 5. Работы
 				{
 					element: '#worksToSelect',
-					waitForElement: 4000,
+					waitForElement: 10000,
+					skipMissingElement: true,
 					popover: {
 						title: 'Выбери работу',
-						description: 'Нажми на эту работу, чтобы добавить ее в смету',
+						description: 'Нажми на работу, чтобы добавить её в смету',
 						side: 'top',
 						showButtons: []
 					},
 					onHighlightStarted: () => {
 						document.body.classList.add('tour-allow-all-clicks')
 					},
-					onHighlighted: (_e, _, { driver }) => {
-						// Слушаем клик по ВСЕМУ контейнеру категорий (делегирование)
+					onHighlighted: (_e, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const root =
 							document.querySelector('#worksToSelect')?.parentElement ??
 							document.body
 
 						const handler = (e: Event) => {
 							const target = e.target as HTMLElement
-							// Если кликнули по категории (подстрой под свой селектор)
 							if (target.closest('[data-work], .works-item, #worksToSelect')) {
 								root.removeEventListener('click', handler, true)
-
 								setTimeout(() => driver.moveNext(), 400)
 							}
 						}
 
 						root.addEventListener('click', handler, true)
+					},
+					onDeselected: () => {
+						document.body.classList.remove('tour-allow-all-clicks')
 					}
 				},
-				// 7. Просмотр данных
+
+				// 6. Редактирование
 				{
 					element: '#editingPage',
-
+					waitForElement: 5000,
 					popover: {
 						title: 'Измени значения',
 						description:
-							'Все в твоих руках - изменяй все как твоей душе угодно. Ставь другую цену, единицу измерения, количество и даже название работы, которая будет добавлена. Для продолжения введи любое количество.',
+							'Меняй цену, единицу, количество и название. Для продолжения введи любое количество.',
 						side: 'bottom',
 						showButtons: []
 					},
 					onHighlightStarted: () => {
 						document.body.classList.add('tour-allow-all-clicks')
 					},
-					onHighlighted: (_e, _, { driver }) => {
+					onHighlighted: (_e, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const input = document.getElementById('countInput')
 						if (!input) return
 
 						input.focus()
-
 						input.addEventListener(
 							'input',
 							() => {
@@ -259,10 +340,11 @@ export function InteractiveTour() {
 						document.body.classList.remove('tour-allow-all-clicks')
 					}
 				},
-				// 8. Сохранить работу и вернуться на главную
+
+				// 7. Сохранить работу → назад на главную
 				{
 					element: '#addWorkButton',
-					waitForElement: 3000,
+					waitForElement: 5000,
 					popover: {
 						title: 'Сохрани добавленную работу',
 						description: 'Нажми на кнопку — работа попадёт в смету',
@@ -276,7 +358,6 @@ export function InteractiveTour() {
 						btn.addEventListener(
 							'click',
 							() => {
-								// Правильный доступ к store вне React-рендера
 								const { places, addWork } = useSmetaStore.getState()
 
 								if (places[0]) {
@@ -289,29 +370,31 @@ export function InteractiveTour() {
 									})
 								}
 
-								// Следующий шаг на главной = index 8
 								localStorage.setItem(TOUR_STEP_KEY, '8')
 								isNavigatingRef.current = true
 								driver.destroy()
-								// навигация на / произойдёт сама от кнопки
 							},
 							{ once: true }
 						)
 					}
 				},
 
-				// 9. Показать первую работу на главной
+				// 8. Вторая работа на главной
 				{
 					element: '#secondWorkItem',
-					waitForElement: 5000, // важно! элемент появится после возврата
+					waitForElement: 8000,
+					skipMissingElement: true,
 					popover: {
 						title: 'Ваша первая добавленная работа',
 						description: 'Вот она появилась в смете',
 						side: 'bottom',
-						showButtons: ['next'] // или [] + свой обработчик
+						showButtons: ['next']
 					},
-					onHighlighted: (element, _, { driver }) => {
-						// Просто показываем. Дальше — по кнопке Далее или по клику
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const btn = element as HTMLElement
 						if (!btn) return
 
@@ -322,17 +405,23 @@ export function InteractiveTour() {
 						)
 					}
 				},
+
+				// 9. Первая работа (пример)
 				{
 					element: '#firstWorkItem',
-					waitForElement: 5000, // важно! элемент появится после возврата
+					waitForElement: 5000,
+					skipMissingElement: true,
 					popover: {
-						title: 'Еще одна работа',
+						title: 'Ещё одна работа',
 						description: 'Она появилась для примера, чтобы показать функционал',
 						side: 'bottom',
-						showButtons: ['next'] // или [] + свой обработчик
+						showButtons: ['next']
 					},
-					onHighlighted: (element, _, { driver }) => {
-						// Просто показываем. Дальше — по кнопке Далее или по клику
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const btn = element as HTMLElement
 						if (!btn) return
 
@@ -343,6 +432,8 @@ export function InteractiveTour() {
 						)
 					}
 				},
+
+				// 10. Long-press
 				{
 					element: '#firstWorkItem',
 					popover: {
@@ -354,7 +445,11 @@ export function InteractiveTour() {
 					onHighlightStarted: () => {
 						document.body.classList.add('tour-allow-all-clicks')
 					},
-					onHighlighted: (element, _, { driver }) => {
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const el = element as HTMLElement
 						if (!el) return
 
@@ -388,6 +483,8 @@ export function InteractiveTour() {
 						document.body.classList.remove('tour-allow-all-clicks')
 					}
 				},
+
+				// 11. Drag & drop
 				{
 					element: '#reorderIcon',
 					popover: {
@@ -399,7 +496,11 @@ export function InteractiveTour() {
 					onHighlightStarted: () => {
 						document.body.classList.add('tour-allow-all-clicks')
 					},
-					onHighlighted: (_e, _, { driver }) => {
+					onHighlighted: (_e, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const getOrder = () =>
 							useSmetaStore
 								.getState()
@@ -425,17 +526,23 @@ export function InteractiveTour() {
 						document.body.classList.remove('tour-allow-all-clicks')
 					}
 				},
+
+				// 12. Сохранить порядок
 				{
 					element: '#saveReorder',
+					waitForElement: 3000,
 					popover: {
 						title: 'Нажми на кнопку',
 						description:
-							'Сохрани изменения. Для этого можно также просто тыкнуть в пустое место',
+							'Сохрани изменения. Можно также тапнуть в пустое место',
 						side: 'bottom',
-						showButtons: [] // или [] + свой обработчик
+						showButtons: []
 					},
-					onHighlighted: (element, _, { driver }) => {
-						// Просто показываем. Дальше — по кнопке Далее или по клику
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const btn = element as HTMLElement
 						if (!btn) return
 
@@ -446,6 +553,8 @@ export function InteractiveTour() {
 						)
 					}
 				},
+
+				// 13. Результат
 				{
 					element: '#homePage',
 					popover: {
@@ -457,10 +566,17 @@ export function InteractiveTour() {
 					onHighlightStarted: () => {
 						document.body.classList.add('tour-allow-all-clicks')
 					},
+					onHighlighted: (_e, _s, { index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+					},
 					onDeselected: () => {
 						document.body.classList.remove('tour-allow-all-clicks')
 					}
 				},
+
+				// 14. Удалить всё
 				{
 					element: '#deleteAllButton',
 					popover: {
@@ -469,7 +585,11 @@ export function InteractiveTour() {
 						side: 'bottom',
 						showButtons: []
 					},
-					onHighlighted: (element, _, { driver }) => {
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const btn = element as HTMLElement
 						if (!btn) return
 
@@ -480,15 +600,22 @@ export function InteractiveTour() {
 						)
 					}
 				},
+
+				// 15. Подтверждение в модалке
 				{
 					element: '#blueModalButton',
+					waitForElement: 5000,
 					popover: {
 						title: 'Подтверди выбор',
-						description: 'Нажми на кнопку и все данные пропадут.',
+						description: 'Нажми на кнопку — все данные пропадут',
 						side: 'bottom',
 						showButtons: []
 					},
-					onHighlighted: (element, _, { driver }) => {
+					onHighlighted: (element, _, { driver, index }) => {
+						if (typeof index === 'number') {
+							localStorage.setItem(TOUR_STEP_KEY, String(index))
+						}
+
 						const btn = element as HTMLElement
 						if (!btn) return
 
@@ -499,12 +626,15 @@ export function InteractiveTour() {
 						)
 					}
 				},
+
+				// 16. Конец
 				{
 					element: '#endOfTour',
+					waitForElement: 3000,
 					popover: {
 						title: 'Поздравляю! Обучение окончено.',
 						description:
-							'Ты научился добавлять элементы и менять их местами, а теперь ты можешь приступать к созданию собственных смет.',
+							'Ты научился добавлять элементы и менять их местами. Можно создавать свои сметы.',
 						side: 'bottom',
 						showButtons: ['next'],
 						doneBtnText: 'Готово!',
@@ -521,6 +651,7 @@ export function InteractiveTour() {
 			onDestroyed: () => {
 				document.body.classList.remove('tour-allow-all-clicks')
 
+				// Переход между страницами — progress уже в localStorage
 				if (isNavigatingRef.current) {
 					return
 				}
@@ -534,13 +665,18 @@ export function InteractiveTour() {
 
 		const timer = setTimeout(() => {
 			driverObj.drive(startIndex)
-			isNavigatingRef.current = false // ← обязательно
+			isNavigatingRef.current = false
 		}, 600)
 
 		return () => {
 			clearTimeout(timer)
-			if (!isNavigatingRef.current && driverRef.current) {
+			document.body.classList.remove('tour-allow-all-clicks')
+
+			if (driverRef.current) {
+				// Уход со страницы: не помечаем тур завершённым
+				isNavigatingRef.current = true
 				driverRef.current.destroy()
+				driverRef.current = null
 			}
 		}
 	}, [location.pathname])
