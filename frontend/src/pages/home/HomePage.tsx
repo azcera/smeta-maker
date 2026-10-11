@@ -27,11 +27,17 @@ export default function HomePage() {
 		clearAll,
 		isTransportCost,
 		isTrashCost,
-		setIsReorder
+		setIsReorder,
+		isTourCompleted,
+		setIsTourCompleted,
+		setShowTour,
+		showTour,
+		tourStep
 	} = useSmetaStore()
 
 	const [showAddPlace, setShowAddPlace] = useState(false)
 	const [isErrorModal, setIsErrorModal] = useState(false)
+	const [isTourModal, setIsTourModal] = useState(false)
 	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const [modalMessage, setModalMessage] = useState<ModalMessageType>({
 		title: 'Ошибка',
@@ -46,6 +52,9 @@ export default function HomePage() {
 	const { handleSave, saving } = useSmetaExport(handleError)
 	useEffect(() => {
 		document.title = 'Создатель смет'
+		if (!isTourCompleted && !showTour && tourStep === null) {
+			setIsTourModal(true)
+		}
 	}, [])
 
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -146,6 +155,31 @@ export default function HomePage() {
 						onClick: () => {
 							clearAll()
 							setIsDeleteModal(false)
+						}
+					}
+				}}
+			/>
+			<Modal
+				isOpen={isTourModal}
+				onClose={() => {
+					setIsTourCompleted(true)
+					setIsTourModal(false)
+				}}
+				description='Будет проведен тур по основному функционалу для наглядного отображения возможностей программы.'
+				title='Начать прохождение обучения?'
+				buttons={{
+					grey: {
+						title: 'Нет',
+						onClick: () => {
+							setIsTourCompleted(true)
+							setIsTourModal(false)
+						}
+					},
+					blue: {
+						title: 'Начать',
+						onClick: () => {
+							setIsTourModal(false)
+							setShowTour(true)
 						}
 					}
 				}}

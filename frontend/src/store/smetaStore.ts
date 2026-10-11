@@ -53,6 +53,14 @@ interface SmetaStore {
 	reorderWork: (placeId: string, oldIndex: number, newIndex: number) => void
 
 	clearAll: () => void
+
+	tourStep: number | null
+	isTourCompleted: boolean
+	showTour: boolean
+
+	setTourStep: (value: number | null) => void
+	setIsTourCompleted: (value: boolean) => void
+	setShowTour: (value: boolean) => void
 }
 
 export const useSmetaStore = create<SmetaStore>()(
@@ -223,6 +231,22 @@ export const useSmetaStore = create<SmetaStore>()(
 					isTrashCost: false,
 					objectName: '',
 					importedTable: null
+				}),
+			tourStep: null,
+			isTourCompleted: false,
+
+			setTourStep: value =>
+				set({
+					tourStep: value
+				}),
+			setIsTourCompleted: value =>
+				set({
+					isTourCompleted: value
+				}),
+			showTour: false,
+			setShowTour: value =>
+				set({
+					showTour: value
 				})
 		}),
 
@@ -240,7 +264,10 @@ export const useSmetaStore = create<SmetaStore>()(
 				viewType: state.viewType,
 				dbWorks: state.dbWorks,
 				dbWorksLoaded: state.dbWorksLoaded,
-				isSearchMethod: state.isSearchMethod
+				isSearchMethod: state.isSearchMethod,
+				isTourCompleted: state.isTourCompleted,
+				tourStep: state.tourStep,
+				showTour: state.showTour
 			})
 		}
 	)

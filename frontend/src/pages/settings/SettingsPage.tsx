@@ -1,6 +1,7 @@
-import { Eye, Moon, Search, Sun, Trash, Truck } from 'lucide-react'
+import { Eye, Moon, RefreshCcw, Search, Sun, Trash, Truck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { playTour } from '../../components/InteractiveTour'
 import { Header } from '../../components/layout/Header'
 import Modal from '../../components/Modal'
 import type { ViewTypes } from '../../store/smetaStore'
@@ -171,6 +172,30 @@ export default function SettingsPage() {
 					setSwitchable={setIsSearchMethod}
 					title='Отображение строки поиска'
 				/>
+
+				<div
+					className={`rounded-2xl p-5 ${
+						isDark
+							? 'bg-neutral-900'
+							: 'bg-white border border-slate-200 shadow-sm'
+					}`}
+				>
+					<div className='flex items-center justify-between '>
+						<button
+							onClick={() => playTour(navigate)}
+							className={`flex-1 h-12 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+								isDark
+									? 'bg-white text-black hover:bg-neutral-100'
+									: 'bg-blue-600 text-white hover:bg-blue-700'
+							} disabled:opacity-40 disabled:cursor-not-allowed`}
+						>
+							<RefreshCcw
+								className={`w-5 h-5 ${isDark ? 'text-black' : 'text-white'}`}
+							/>
+							Перепройти обучение
+						</button>
+					</div>
+				</div>
 
 				<Modal
 					title='Ошибка'

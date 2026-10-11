@@ -11,7 +11,7 @@ import { useSmetaStore } from './store/smetaStore'
 import { useIsScreenTooSmall } from './utils/hooks/useIsScreenTooSmall'
 
 function App() {
-	const { loadDbWorks } = useSmetaStore()
+	const { loadDbWorks, showTour } = useSmetaStore()
 
 	useEffect(() => {
 		loadDbWorks()
@@ -60,7 +60,7 @@ function App() {
 					/>
 				</Route>
 			</Routes>
-			<InteractiveTour />
+			{showTour && <InteractiveTour />}
 		</BrowserRouter>
 	)
 }

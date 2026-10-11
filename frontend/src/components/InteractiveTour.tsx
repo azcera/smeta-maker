@@ -17,15 +17,15 @@ const STEP_PATH: Record<number, string | RegExp> = {
 	5: /^\/works/, // работы
 	6: /^\/works/, // редактирование
 	7: /^\/works/, // сохранить работу
-	8: '/', // secondWorkItem
-	9: '/', // firstWorkItem
-	10: '/', // long-press
-	11: '/', // reorder
-	12: '/', // save reorder
-	13: '/', // homePage
-	14: '/', // deleteAll
-	15: '/', // blueModal
-	16: '/' // end
+	8: '/',
+	9: '/',
+	10: '/',
+	11: '/',
+	12: '/',
+	13: '/',
+	14: '/',
+	15: '/',
+	16: '/'
 }
 
 function pathMatches(stepIndex: number, pathname: string) {
@@ -35,12 +35,26 @@ function pathMatches(stepIndex: number, pathname: string) {
 	return rule.test(pathname)
 }
 
-/** Вызвать из UI: «Пропустить обучение» */
 export function skipTour() {
-	localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
-	localStorage.removeItem(TOUR_STEP_KEY)
+	const { setIsTourCompleted, setTourStep, setShowTour } =
+		useSmetaStore.getState()
+	setIsTourCompleted(true)
+	setTourStep(null)
+	setShowTour(false)
 	document.body.classList.remove('tour-allow-all-clicks')
 	window.dispatchEvent(new Event('tour:skip'))
+}
+
+export function playTour(navigate?: (path: string) => void) {
+	const { setIsTourCompleted, setTourStep, setShowTour } =
+		useSmetaStore.getState()
+	setIsTourCompleted(false)
+	setShowTour(true)
+	setTourStep(0)
+
+	if (navigate) {
+		navigate('/')
+	}
 }
 
 export function InteractiveTour() {
@@ -48,7 +62,6 @@ export function InteractiveTour() {
 	const driverRef = useRef<ReturnType<typeof driver> | null>(null)
 	const isNavigatingRef = useRef(false)
 
-	// Кнопка «Пропустить»
 	useEffect(() => {
 		const onSkip = () => {
 			isNavigatingRef.current = false
@@ -60,625 +73,528 @@ export function InteractiveTour() {
 	}, [])
 
 	useEffect(() => {
-		if (localStorage.getItem(TOUR_COMPLETED_KEY) === 'true') return
+		const {
+			isDark,
+			showTour,
+			isTourCompleted,
+			tourStep,
+			setTourStep,
+			setIsTourCompleted,
+			setShowTour,
+			places
+		} = useSmetaStore.getState()
 
-		const { isDark } = useSmetaStore.getState()
-		const savedStep = localStorage.getItem(TOUR_STEP_KEY)
+		if (isTourCompleted || !showTour) return
+
 		const isStartPage = location.pathname === '/'
+		const startIndex = tourStep !== null ? Number(tourStep) : 0
 
-		// Тур ещё не начат и мы не на старте
-		if (savedStep === null && !isStartPage) return
+		// ЗАЩИТА ОТ ОБНОВЛЕНИЯ СТРАНИЦЫ (F5)
+		const isWorksPage = /^\/works/.test(location.pathname)
+		const hasPlaces =
+			places && (Array.isArray(places) ? places.length > 0 : true)
 
-		const startIndex = savedStep !== null ? Number(savedStep) : 0
+		let correctedIndex = startIndex
 
-		// Страница не подходит под текущий шаг — не вешаем overlay
-		if (!pathMatches(startIndex, location.pathname)) {
+		if (isWorksPage && startIndex >= 4 && startIndex <= 7) {
+			const categoriesEl = document.querySelector('#categoriesToSelect')
+			const worksEl = document.querySelector('#worksToSelect')
+			const editEl = document.querySelector('#editingPage')
+
+			if (!hasPlaces) {
+				setTourStep(4)
+				return
+			}
+
+			if (startIndex === 4 && !categoriesEl) {
+				return
+			}
+			if (startIndex === 5 && !worksEl && categoriesEl) {
+				setTourStep(4)
+				return
+			}
+			if (startIndex === 6 && !editEl) {
+				setTourStep(4)
+				return
+			}
+		}
+
+		if (!pathMatches(correctedIndex, location.pathname)) {
 			document.body.classList.remove('tour-allow-all-clicks')
 			return
 		}
 
-		if (driverRef.current) {
-			isNavigatingRef.current = true
+		if (driverRef.current && isNavigatingRef.current) {
 			driverRef.current.destroy()
 			driverRef.current = null
+			isNavigatingRef.current = false
 		}
 
-		const driverObj = driver({
-			showProgress: true,
-			animate: true,
-			allowClose: false,
-			overlayClickBehavior: 'none',
-			disableActiveInteraction: false,
-			stagePadding: 6,
-			nextBtnText: 'Далее →',
-			prevBtnText: '← Назад',
-			doneBtnText: 'Готово!',
-			overlayOpacity: 0.6,
-			popoverClass: isDark
-				? 'smeta-tour-popover smeta-tour-popover--dark'
-				: 'smeta-tour-popover',
+		if (!driverRef.current) {
+			driverRef.current = driver({
+				showProgress: true,
+				animate: true,
+				allowClose: false,
+				overlayClickBehavior: 'none',
+				disableActiveInteraction: false,
+				stagePadding: 6,
+				nextBtnText: 'Далее →',
+				prevBtnText: '← Назад',
+				doneBtnText: 'Готово!',
+				overlayOpacity: 0.6,
+				popoverClass: isDark
+					? 'smeta-tour-popover smeta-tour-popover--dark'
+					: 'smeta-tour-popover',
 
-			steps: [
-				// 0. Кнопка добавить помещение
-				{
-					element: '#addPlaceButton',
-					popover: {
-						title: 'Создай первое помещение',
-						description: 'Нажми на эту кнопку, чтобы создать новое помещение',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const { clearAll } = useSmetaStore.getState()
-						clearAll()
-
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => setTimeout(() => driver.moveNext(), 400),
-							{ once: true }
-						)
-					}
-				},
-
-				// 1. Инпут в модалке
-				{
-					element: '#placeModalInput',
-					waitForElement: 5000,
-					popover: {
-						title: 'Название помещения',
-						description:
-							'Сейчас я автоматически заполню название. Потом просто нажми «Добавить».',
-						side: 'right',
-						showButtons: []
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const input = element as HTMLInputElement
-						if (!input) return
-
-						const textToInsert = 'Первое помещение'
-						const delayPerChar = 80
-
-						const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-							window.HTMLInputElement.prototype,
-							'value'
-						)?.set
-
-						nativeInputValueSetter?.call(input, '')
-						input.dispatchEvent(new Event('input', { bubbles: true }))
-
-						textToInsert.split('').forEach((char, i) => {
-							setTimeout(
-								() => {
-									nativeInputValueSetter?.call(input, input.value + char)
-									input.dispatchEvent(new Event('input', { bubbles: true }))
-								},
-								delayPerChar * (i + 1)
+				steps: [
+					// 0. Добавить помещение
+					{
+						element: '#addPlaceButton',
+						popover: {
+							title: 'Создай первое помещение',
+							description: 'Нажми на эту кнопку',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(0)
+							useSmetaStore.getState().clearAll()
+							el?.addEventListener(
+								'click',
+								() => setTimeout(() => driver.moveNext(), 300),
+								{ once: true }
 							)
-						})
-
-						const totalTime = delayPerChar * textToInsert.length + 1500
-						setTimeout(() => driver.moveNext(), totalTime)
-					}
-				},
-
-				// 2. Сохранить помещение
-				{
-					element: '#bluePlaceModalButton',
-					waitForElement: 3000,
-					popover: {
-						title: 'Сохрани помещение',
-						description: 'Нажми «Добавить», чтобы создать помещение',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
 						}
-
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => setTimeout(() => driver.moveNext(), 400),
-							{ once: true }
-						)
-					}
-				},
-
-				// 3. Добавить работу → уход на /works/...
-				{
-					element: '#addWorkButton',
-					waitForElement: 4000,
-					popover: {
-						title: 'Теперь добавь работу',
-						description: 'Нажми, чтобы открыть список категорий с работами',
-						side: 'bottom',
-						showButtons: []
 					},
-					onHighlighted: (element, _, { driver }) => {
-						const btn = element as HTMLElement
-						if (!btn) return
+					// 1. Инпут в модалке (эффект печати)
+					{
+						element: '#placeModalInput',
+						waitForElement: 5000,
+						popover: {
+							title: 'Название помещения',
+							description:
+								'Сейчас я автоматически заполню название. Потом просто нажми «Добавить».',
+							side: 'right',
+							showButtons: []
+						},
+						onHighlighted: (element, _, { driver }) => {
+							setTourStep(1)
+							const input = element as HTMLInputElement
+							if (!input) return
 
-						btn.addEventListener(
-							'click',
-							() => {
-								localStorage.setItem(TOUR_STEP_KEY, '4')
-								isNavigatingRef.current = true
-								driver.destroy()
-							},
-							{ once: true }
-						)
-					}
-				},
+							const textToInsert = 'Первое помещение'
+							const delayPerChar = 80
 
-				// 4. Категории
-				{
-					element: '#categoriesToSelect',
-					waitForElement: 10000,
-					skipMissingElement: true,
-					popover: {
-						title: 'Выбери категорию',
-						description: 'Нажми на любую категорию, чтобы открыть список работ',
-						side: 'top',
-						showButtons: []
-					},
-					onHighlightStarted: () => {
-						document.body.classList.add('tour-allow-all-clicks')
-						const { loadDbWorks } = useSmetaStore.getState()
-						loadDbWorks()
-					},
-					onHighlighted: (_e, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
+							const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+								window.HTMLInputElement.prototype,
+								'value'
+							)?.set
 
-						const root =
-							document.querySelector('#categoriesToSelect')?.parentElement ??
-							document.body
+							nativeInputValueSetter?.call(input, '')
+							input.dispatchEvent(new Event('input', { bubbles: true }))
 
-						const handler = (e: Event) => {
-							const target = e.target as HTMLElement
-							if (
-								target.closest(
-									'[data-category], .category-item, #categoriesToSelect'
+							textToInsert.split('').forEach((char, i) => {
+								setTimeout(
+									() => {
+										// Проверяем, что тур не закрыт во время печати
+										if (!driverRef.current) return
+										nativeInputValueSetter?.call(input, input.value + char)
+										input.dispatchEvent(new Event('input', { bubbles: true }))
+									},
+									delayPerChar * (i + 1)
 								)
-							) {
-								root.removeEventListener('click', handler, true)
-								setTimeout(() => driver.moveNext(), 400)
-							}
+							})
+
+							const totalTime = delayPerChar * textToInsert.length + 1500
+							setTimeout(() => {
+								if (driverRef.current) driver.moveNext()
+							}, totalTime)
 						}
-
-						root.addEventListener('click', handler, true)
 					},
-					onDeselected: () => {
-						document.body.classList.remove('tour-allow-all-clicks')
-					}
-				},
-
-				// 5. Работы
-				{
-					element: '#worksToSelect',
-					waitForElement: 10000,
-					skipMissingElement: true,
-					popover: {
-						title: 'Выбери работу',
-						description: 'Нажми на работу, чтобы добавить её в смету',
-						side: 'top',
-						showButtons: []
-					},
-					onHighlightStarted: () => {
-						document.body.classList.add('tour-allow-all-clicks')
-					},
-					onHighlighted: (_e, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
+					// 2. Сохранить помещение
+					{
+						element: '#bluePlaceModalButton',
+						waitForElement: 3000,
+						popover: {
+							title: 'Сохрани помещение',
+							description: 'Нажми «Добавить»',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(2)
+							el?.addEventListener(
+								'click',
+								() => setTimeout(() => driver.moveNext(), 300),
+								{ once: true }
+							)
 						}
-
-						const root =
-							document.querySelector('#worksToSelect')?.parentElement ??
-							document.body
-
-						const handler = (e: Event) => {
-							const target = e.target as HTMLElement
-							if (target.closest('[data-work], .works-item, #worksToSelect')) {
-								root.removeEventListener('click', handler, true)
-								setTimeout(() => driver.moveNext(), 400)
-							}
+					},
+					// 3. Добавить работу
+					{
+						element: '#addWorkButton',
+						waitForElement: 4000,
+						popover: {
+							title: 'Теперь добавь работу',
+							description: 'Нажми для перехода к категориям',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(3)
+							el?.addEventListener(
+								'click',
+								() => {
+									isNavigatingRef.current = true
+									setTourStep(4)
+									driver.destroy()
+								},
+								{ once: true }
+							)
 						}
-
-						root.addEventListener('click', handler, true)
 					},
-					onDeselected: () => {
-						document.body.classList.remove('tour-allow-all-clicks')
-					}
-				},
+					// 4. Категории
+					{
+						element: '#categoriesToSelect',
+						waitForElement: 5000,
+						popover: {
+							title: 'Выбери категорию',
+							description:
+								'Нажми на любую категорию, чтобы открыть список работ',
+							side: 'top',
+							showButtons: []
+						},
+						onHighlightStarted: () => {
+							document.body.classList.add('tour-allow-all-clicks')
+							useSmetaStore.getState().loadDbWorks()
+						},
+						onHighlighted: (_e, _, { driver }) => {
+							setTourStep(4)
+							// Ищем родителя или вешаем на body для надежности перехвата клика
+							const root =
+								document.querySelector('#categoriesToSelect')?.parentElement ??
+								document.body
 
-				// 6. Редактирование
-				{
-					element: '#editingPage',
-					waitForElement: 5000,
-					popover: {
-						title: 'Измени значения',
-						description:
-							'Меняй цену, единицу, количество и название. Для продолжения введи любое количество.',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlightStarted: () => {
-						document.body.classList.add('tour-allow-all-clicks')
-					},
-					onHighlighted: (_e, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const input = document.getElementById('countInput')
-						if (!input) return
-
-						input.focus()
-						input.addEventListener(
-							'input',
-							() => {
-								document.body.classList.remove('tour-allow-all-clicks')
-								setTimeout(() => driver.moveNext(), 400)
-							},
-							{ once: true }
-						)
-					},
-					onDeselected: () => {
-						document.body.classList.remove('tour-allow-all-clicks')
-					}
-				},
-
-				// 7. Сохранить работу → назад на главную
-				{
-					element: '#addWorkButton',
-					waitForElement: 5000,
-					popover: {
-						title: 'Сохрани добавленную работу',
-						description: 'Нажми на кнопку — работа попадёт в смету',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlighted: (element, _, { driver }) => {
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => {
-								const { places, addWork } = useSmetaStore.getState()
-
-								if (places[0]) {
-									addWork(places[0].id, {
-										name: 'Сборка мебели',
-										price: 5000,
-										quantity: 1,
-										unit: 'комплекс',
-										fromDb: false
-									})
+							const handler = (e: Event) => {
+								const target = e.target as HTMLElement
+								// Проверяем все возможные варианты ваших классов и дата-атрибутов
+								if (
+									target.closest(
+										'[data-category], .category-item, #categoriesToSelect'
+									)
+								) {
+									root.removeEventListener('click', handler, true)
+									setTimeout(() => {
+										if (driverRef.current) driver.moveNext()
+									}, 400)
 								}
+							}
+							root.addEventListener('click', handler, true)
+						},
+						onDeselected: () =>
+							document.body.classList.remove('tour-allow-all-clicks')
+					},
+					// 5. Работы
+					{
+						element: '#worksToSelect',
+						waitForElement: 5000,
+						popover: {
+							title: 'Выбери работу',
+							description: 'Нажми на работу, чтобы добавить её в смету',
+							side: 'top',
+							showButtons: []
+						},
+						onHighlightStarted: () =>
+							document.body.classList.add('tour-allow-all-clicks'),
+						onHighlighted: (_e, _, { driver }) => {
+							setTourStep(5)
+							const root =
+								document.querySelector('#worksToSelect')?.parentElement ??
+								document.body
 
-								localStorage.setItem(TOUR_STEP_KEY, '8')
-								isNavigatingRef.current = true
+							const handler = (e: Event) => {
+								const target = e.target as HTMLElement
+								if (
+									target.closest('[data-work], .works-item, #worksToSelect')
+								) {
+									root.removeEventListener('click', handler, true)
+									setTimeout(() => {
+										if (driverRef.current) driver.moveNext()
+									}, 400)
+								}
+							}
+							root.addEventListener('click', handler, true)
+						},
+						onDeselected: () =>
+							document.body.classList.remove('tour-allow-all-clicks')
+					},
+					// 6. Редактирование
+					{
+						element: '#editingPage',
+						waitForElement: 5000,
+						popover: {
+							title: 'Измени значения',
+							description: 'Введи количество для продолжения',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlightStarted: () =>
+							document.body.classList.add('tour-allow-all-clicks'),
+						onHighlighted: (_, __, { driver }) => {
+							setTourStep(6)
+							const input = document.getElementById('countInput')
+							input?.focus()
+							input?.addEventListener(
+								'input',
+								() => {
+									document.body.classList.remove('tour-allow-all-clicks')
+									setTimeout(() => driver.moveNext(), 300)
+								},
+								{ once: true }
+							)
+						},
+						onDeselected: () =>
+							document.body.classList.remove('tour-allow-all-clicks')
+					},
+					// 7. Сохранить работу
+					{
+						element: '#addWorkButton',
+						waitForElement: 5000,
+						popover: {
+							title: 'Сохрани добавленную работу',
+							description: 'Нажми на кнопку',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(7)
+							el?.addEventListener(
+								'click',
+								() => {
+									const currentPlaces = useSmetaStore.getState().places
+									const targetPlace = Array.isArray(currentPlaces)
+										? currentPlaces[0]
+										: currentPlaces
+									if (targetPlace) {
+										useSmetaStore.getState().addWork(targetPlace.id, {
+											name: 'Сборка мебели',
+											price: 5000,
+											quantity: 1,
+											unit: 'комплекс',
+											fromDb: false
+										})
+									}
+									isNavigatingRef.current = true
+									setTourStep(8)
+									driver.destroy()
+								},
+								{ once: true }
+							)
+						}
+					},
+					// 8. Вторая работа на главной
+					{
+						element: '#secondWorkItem',
+						waitForElement: 5000,
+						popover: {
+							title: 'Ваша работа',
+							description: 'Появилась в смете',
+							side: 'bottom',
+							showButtons: ['next']
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(8)
+							el?.addEventListener('click', () => driver.moveNext(), {
+								once: true
+							})
+						}
+					},
+					// 9. Первая работа
+					{
+						element: '#firstWorkItem',
+						waitForElement: 5000,
+						popover: {
+							title: 'Пример работы',
+							description: 'Появилась для демонстрации',
+							side: 'bottom',
+							showButtons: ['next']
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(9)
+							el?.addEventListener('click', () => driver.moveNext(), {
+								once: true
+							})
+						}
+					},
+					// 10. Long-press
+					{
+						element: '#firstWorkItem',
+						popover: {
+							title: 'Зажмите эту работу',
+							description: 'Для изменения порядка',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlightStarted: () =>
+							document.body.classList.add('tour-allow-all-clicks'),
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(10)
+							const observer = new MutationObserver(() => {
+								if (
+									document.querySelector('.animate-wiggle') ||
+									el?.classList.contains('animate-wiggle')
+								) {
+									observer.disconnect()
+									setTimeout(() => driver.moveNext(), 300)
+								}
+							})
+							observer.observe(document.body, {
+								childList: true,
+								subtree: true,
+								attributes: true
+							})
+						},
+						onDeselected: () =>
+							document.body.classList.remove('tour-allow-all-clicks')
+					},
+					// 11. Drag & drop
+					{
+						element: '#reorderIcon',
+						popover: {
+							title: 'Потяни за кнопку',
+							description: 'Перетащи работу',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlightStarted: () =>
+							document.body.classList.add('tour-allow-all-clicks'),
+						onHighlighted: (_, __, { driver }) => {
+							setTourStep(11)
+							const currentPlaces = useSmetaStore.getState().places
+							const targetPlace = Array.isArray(currentPlaces)
+								? currentPlaces[0]
+								: currentPlaces
+							const initialOrder =
+								targetPlace?.works?.map((w: any) => w.id).join(',') ?? ''
+
+							const unsubscribe = useSmetaStore.subscribe(state => {
+								const statePlaces = state.places
+								const statePlace = Array.isArray(statePlaces)
+									? statePlaces[0]
+									: statePlaces
+								const currentOrder =
+									statePlace?.works?.map((w: any) => w.id).join(',') ?? ''
+								if (currentOrder && currentOrder !== initialOrder) {
+									unsubscribe()
+									setTimeout(() => driver.moveNext(), 300)
+								}
+							})
+						},
+						onDeselected: () =>
+							document.body.classList.remove('tour-allow-all-clicks')
+					},
+					// 12. Сохранить порядок
+					{
+						element: '#saveReorder',
+						waitForElement: 3000,
+						popover: {
+							title: 'Нажми на кнопку',
+							description: 'Сохрани изменения',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(12)
+							el?.addEventListener('click', () => driver.moveNext(), {
+								once: true
+							})
+						}
+					},
+					// 13. Результат
+					{
+						element: '#homePage',
+						popover: {
+							title: 'Результат',
+							description: 'Вы научились управлять элементами',
+							side: 'bottom',
+							showButtons: ['next']
+						},
+
+						onHighlighted: () => setTourStep(13),
+						onHighlightStarted: () =>
+							document.body.classList.add('tour-allow-all-clicks'),
+						onDeselected: () =>
+							document.body.classList.remove('tour-allow-all-clicks')
+					},
+					// 14. Удалить всё
+					{
+						element: '#deleteAllButton',
+						popover: {
+							title: 'Удаление всего',
+							description: 'Очистите данные перед работой',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(14)
+							el?.addEventListener('click', () => driver.moveNext(), {
+								once: true
+							})
+						}
+					},
+					// 15. Подтверждение
+					{
+						element: '#blueModalButton',
+						waitForElement: 5000,
+						popover: {
+							title: 'Подтверди выбор',
+							description: 'Данные удалятся',
+							side: 'bottom',
+							showButtons: []
+						},
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(15)
+							el?.addEventListener('click', () => driver.moveNext(), {
+								once: true
+							})
+						}
+					},
+					// 16. Конец
+					{
+						element: '#endOfTour',
+						popover: {
+							title: 'Обучение окончено!',
+							description: 'Можно создавать свои сметы.',
+							side: 'bottom',
+							showButtons: ['next'],
+							doneBtnText: 'Готово!',
+							onNextClick: (_, __, { driver }) => {
+								setIsTourCompleted(true)
+								setTourStep(null)
+								setShowTour(false)
 								driver.destroy()
-							},
-							{ once: true }
-						)
-					}
-				},
-
-				// 8. Вторая работа на главной
-				{
-					element: '#secondWorkItem',
-					waitForElement: 8000,
-					skipMissingElement: true,
-					popover: {
-						title: 'Ваша первая добавленная работа',
-						description: 'Вот она появилась в смете',
-						side: 'bottom',
-						showButtons: ['next']
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => setTimeout(() => driver.moveNext(), 300),
-							{ once: true }
-						)
-					}
-				},
-
-				// 9. Первая работа (пример)
-				{
-					element: '#firstWorkItem',
-					waitForElement: 5000,
-					skipMissingElement: true,
-					popover: {
-						title: 'Ещё одна работа',
-						description: 'Она появилась для примера, чтобы показать функционал',
-						side: 'bottom',
-						showButtons: ['next']
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => setTimeout(() => driver.moveNext(), 300),
-							{ once: true }
-						)
-					}
-				},
-
-				// 10. Long-press
-				{
-					element: '#firstWorkItem',
-					popover: {
-						title: 'Зажмите эту работу',
-						description: 'Так вы перейдёте в режим изменения порядка работ',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlightStarted: () => {
-						document.body.classList.add('tour-allow-all-clicks')
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const el = element as HTMLElement
-						if (!el) return
-
-						const tryNext = () => {
-							if (
-								document.querySelector('.animate-wiggle') ||
-								el.classList.contains('animate-wiggle')
-							) {
-								setTimeout(() => driver.moveNext(), 300)
-								return true
 							}
-							return false
-						}
-
-						if (tryNext()) return
-
-						const observer = new MutationObserver(() => {
-							if (tryNext()) observer.disconnect()
-						})
-
-						observer.observe(document.body, {
-							childList: true,
-							subtree: true,
-							attributes: true,
-							attributeFilter: ['class']
-						})
-
-						setTimeout(() => observer.disconnect(), 15000)
-					},
-					onDeselected: () => {
-						document.body.classList.remove('tour-allow-all-clicks')
-					}
-				},
-
-				// 11. Drag & drop
-				{
-					element: '#reorderIcon',
-					popover: {
-						title: 'Потяни за кнопку',
-						description: 'Перетащи работу и поменяй местами',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlightStarted: () => {
-						document.body.classList.add('tour-allow-all-clicks')
-					},
-					onHighlighted: (_e, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const getOrder = () =>
-							useSmetaStore
-								.getState()
-								.places[0]?.works.map(w => w.id)
-								.join(',') ?? ''
-
-						const initialOrder = getOrder()
-
-						const unsubscribe = useSmetaStore.subscribe(state => {
-							const currentOrder =
-								state.places[0]?.works.map(w => w.id).join(',') ?? ''
-
-							if (currentOrder && currentOrder !== initialOrder) {
-								unsubscribe()
-								document.body.classList.remove('tour-allow-all-clicks')
-								setTimeout(() => driver.moveNext(), 300)
-							}
-						})
-
-						setTimeout(() => unsubscribe(), 20000)
-					},
-					onDeselected: () => {
-						document.body.classList.remove('tour-allow-all-clicks')
-					}
-				},
-
-				// 12. Сохранить порядок
-				{
-					element: '#saveReorder',
-					waitForElement: 3000,
-					popover: {
-						title: 'Нажми на кнопку',
-						description:
-							'Сохрани изменения. Можно также тапнуть в пустое место',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => setTimeout(() => driver.moveNext(), 300),
-							{ once: true }
-						)
-					}
-				},
-
-				// 13. Результат
-				{
-					element: '#homePage',
-					popover: {
-						title: 'Посмотри на результат',
-						description: 'Ты научился добавлять элементы и менять их местами',
-						side: 'bottom',
-						showButtons: ['next']
-					},
-					onHighlightStarted: () => {
-						document.body.classList.add('tour-allow-all-clicks')
-					},
-					onHighlighted: (_e, _s, { index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-					},
-					onDeselected: () => {
-						document.body.classList.remove('tour-allow-all-clicks')
-					}
-				},
-
-				// 14. Удалить всё
-				{
-					element: '#deleteAllButton',
-					popover: {
-						title: 'Кнопка удаления всего',
-						description: 'Удали все ненужные данные перед началом работы',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => setTimeout(() => driver.moveNext(), 300),
-							{ once: true }
-						)
-					}
-				},
-
-				// 15. Подтверждение в модалке
-				{
-					element: '#blueModalButton',
-					waitForElement: 5000,
-					popover: {
-						title: 'Подтверди выбор',
-						description: 'Нажми на кнопку — все данные пропадут',
-						side: 'bottom',
-						showButtons: []
-					},
-					onHighlighted: (element, _, { driver, index }) => {
-						if (typeof index === 'number') {
-							localStorage.setItem(TOUR_STEP_KEY, String(index))
-						}
-
-						const btn = element as HTMLElement
-						if (!btn) return
-
-						btn.addEventListener(
-							'click',
-							() => setTimeout(() => driver.moveNext(), 300),
-							{ once: true }
-						)
-					}
-				},
-
-				// 16. Конец
-				{
-					element: '#endOfTour',
-					popover: {
-						title: 'Поздравляю! Обучение окончено.',
-						description:
-							'Ты научился добавлять элементы и менять их местами. Можно создавать свои сметы.',
-						side: 'bottom',
-						showButtons: ['next'],
-						doneBtnText: 'Готово!',
-						onNextClick: (_el, _step, { driver }) => {
-							localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
-							localStorage.removeItem(TOUR_STEP_KEY)
-							isNavigatingRef.current = false
-							driver.destroy()
 						}
 					}
+				],
+
+				onDestroyed: () => {
+					document.body.classList.remove('tour-allow-all-clicks')
+					if (isNavigatingRef.current) return
+					setIsTourCompleted(true)
+					setTourStep(null)
 				}
-			],
-
-			onDestroyed: () => {
-				document.body.classList.remove('tour-allow-all-clicks')
-
-				// Переход между страницами — progress уже в localStorage
-				if (isNavigatingRef.current) {
-					return
-				}
-
-				localStorage.setItem(TOUR_COMPLETED_KEY, 'true')
-				localStorage.removeItem(TOUR_STEP_KEY)
-			}
-		})
-
-		driverRef.current = driverObj
+			})
+		}
 
 		const timer = setTimeout(() => {
-			driverObj.drive(startIndex)
-			isNavigatingRef.current = false
-		}, 600)
+			if (driverRef.current) {
+				driverRef.current.drive(correctedIndex)
+			}
+		}, 300)
 
 		return () => {
 			clearTimeout(timer)
-			document.body.classList.remove('tour-allow-all-clicks')
-
-			if (driverRef.current) {
-				// Уход со страницы: не помечаем тур завершённым
-				isNavigatingRef.current = true
-				driverRef.current.destroy()
-				driverRef.current = null
-			}
 		}
 	}, [location.pathname])
 
