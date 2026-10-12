@@ -1,4 +1,4 @@
-import { type LucideIcon, ChevronDown } from 'lucide-react'
+import { ChevronDown, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useSmetaStore } from '../../../store/smetaStore'
 
@@ -35,7 +35,7 @@ export default function ListSwitcher<T extends string>({
 
 	return (
 		<div
-			className={`rounded-2xl p-5 ${
+			className={`select-none rounded-2xl p-5 ${
 				isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'
 			}`}
 		>
@@ -55,45 +55,27 @@ export default function ListSwitcher<T extends string>({
 						) : null}
 					</div>
 				</div>
-				<div className='relative inline-grid max-w-full text-sm'>
-					{/* Кнопка-триггер */}
-					<div
-						className={`${isDark ? 'bg-neutral-800 text-white' : 'bg-slate-50 text-black'} 
-          flex justify-center items-center gap-3 rounded-lg p-1.5 cursor-pointer select-none`}
-						onClick={() => setIsOpen(!isOpen)}
+				<div
+					className={`flex p-2 justify-center items-center gap-3 rounded-lg  cursor-pointer select-none  relative max-w-full text-sm ${isDark ? 'bg-neutral-800 text-white' : 'bg-slate-50 text-black'}`}
+				>
+					<select
+						value={value}
+						onChange={e => {
+							setValue(e.target.value as T)
+						}}
+						className={`${isDark ? 'bg-neutral-800 text-white' : 'bg-slate-50 text-black'} pr-8 focus:outline-0 
+          appearance-none `}
 					>
-						<div className='justify-center items-center min-w-0'>
-							<label
-								className={`text-center flex whitespace-normal wrap-break-words transition-opacity`}
+						{options.map(o => (
+							<option
+								key={o.id}
+								value={o.id}
 							>
-								{options.find(v => v.id === value)?.name}
-							</label>
-						</div>
-						<ChevronDown
-							size={16}
-							className={`shrink-0 ${isDark ? 'text-neutral-400' : 'text-slate-500'} transition-transform ${isOpen ? 'rotate-180' : ''}`}
-						/>
-					</div>
-
-					{/* Выпадающее меню */}
-					{isOpen && (
-						<ul
-							className={`${isDark ? 'bg-neutral-800 text-white' : 'bg-white text-black'} absolute z-50 mt-1 w-full max-h-60 overflow-auto rounded-lg border p-1 shadow-lg`}
-						>
-							{options.map(v => (
-								<li
-									key={v.id}
-									className='cursor-pointer rounded-md p-2 hover:bg-neutral-700'
-									onClick={() => {
-										setValue(v.id)
-										setIsOpen(false)
-									}}
-								>
-									{v.name}
-								</li>
-							))}
-						</ul>
-					)}
+								{o.name}
+							</option>
+						))}
+					</select>
+					<ChevronDown className='w-5 h-5 right-4 absolute pointer-events-none' />
 				</div>
 			</div>
 		</div>

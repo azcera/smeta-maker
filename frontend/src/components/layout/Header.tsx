@@ -21,7 +21,7 @@ export function Header({
 
 	return (
 		<div
-			className={`fixed top-0 left-0 right-0 z-20 px-4 pb-4 space-y-4 ${
+			className={`select-none fixed top-0 left-0 right-0 z-20 px-4 pb-4 space-y-4 ${
 				isDark ? 'bg-neutral-950' : 'bg-slate-100'
 			} ${headerClasses ?? ''}`}
 			style={{

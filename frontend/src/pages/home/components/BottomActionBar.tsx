@@ -33,7 +33,7 @@ export function BottomActionBar({
 					onClick={() =>
 						setViewType(viewType === 'QUANTITY' ? 'TOTAL' : 'QUANTITY')
 					}
-					className={`block mx-auto mb-3 cursor-pointer px-4 py-1.5 rounded-full text-sm ${
+					className={`select-none block mx-auto mb-3 cursor-pointer px-4 py-1.5 rounded-full text-sm ${
 						isDark
 							? 'bg-neutral-800 text-neutral-300'
 							: 'bg-slate-100 text-slate-600'
@@ -66,7 +66,7 @@ export function BottomActionBar({
 						id={isReorder ? 'saveReorder' : ''}
 						onClick={isReorder ? () => setIsReorder(false) : onSaveClick}
 						disabled={saving || allWorksCount === 0}
-						className={`flex-1 h-12 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+						className={`select-none flex-1 h-12 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
 							isDark
 								? 'bg-white text-black hover:bg-neutral-100'
 								: 'bg-blue-600 text-white hover:bg-blue-700'

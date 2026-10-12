@@ -88,7 +88,7 @@ export default function SettingsPage() {
 					className={`rounded-2xl p-5 space-y-3 ${isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'}`}
 				>
 					<label
-						className={`block text-sm ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
+						className={`select-none  block text-sm ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
 					>
 						Название объекта
 					</label>
@@ -97,7 +97,7 @@ export default function SettingsPage() {
 						ref={inputNameRef}
 						onChange={e => setObjectName(e.target.value)}
 						placeholder='Например: Квартира ул. Ленина 15'
-						className={`w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+						className={`w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
 							isDark
 								? 'bg-neutral-800 border border-neutral-700 text-white'
 								: 'bg-slate-50 border border-slate-200 text-slate-900'
@@ -130,7 +130,7 @@ export default function SettingsPage() {
 				<ListSwitcher
 					icons={{ dark: Eye }}
 					description=''
-					title='Режим отображения'
+					title='Отображение'
 					options={viewTypeOptions}
 					setValue={setViewType}
 					value={viewType}
@@ -174,7 +174,7 @@ export default function SettingsPage() {
 				/>
 
 				<div
-					className={`rounded-2xl p-5 ${
+					className={`select-none rounded-2xl p-5 ${
 						isDark
 							? 'bg-neutral-900'
 							: 'bg-white border border-slate-200 shadow-sm'

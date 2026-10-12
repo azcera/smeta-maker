@@ -69,7 +69,7 @@ export function WorkFormStep({
 			>
 				<div>
 					<label
-						className={`block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
+						className={`select-none block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
 					>
 						Наименование
 					</label>
@@ -83,7 +83,7 @@ export function WorkFormStep({
 				<div className='grid grid-cols-3 gap-3'>
 					<div>
 						<label
-							className={`block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
+							className={`select-none block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
 						>
 							Ед. изм.
 						</label>
@@ -113,7 +113,7 @@ export function WorkFormStep({
 
 					<div>
 						<label
-							className={`block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
+							className={`select-none block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
 						>
 							Кол-во
 						</label>
@@ -135,7 +135,7 @@ export function WorkFormStep({
 
 					<div>
 						<label
-							className={`block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
+							className={`select-none block text-sm mb-1.5 ${isDark ? 'text-neutral-400' : 'text-slate-600'}`}
 						>
 							Цена
 						</label>
@@ -152,7 +152,7 @@ export function WorkFormStep({
 				</div>
 
 				<div
-					className={`rounded-xl px-4 py-3 flex justify-between text-sm ${isDark ? 'bg-neutral-800' : 'bg-slate-50'}`}
+					className={`select-none rounded-xl px-4 py-3 flex justify-between text-sm ${isDark ? 'bg-neutral-800' : 'bg-slate-50'}`}
 				>
 					<span className={isDark ? 'text-neutral-400' : 'text-slate-500'}>
 						Сумма
@@ -165,7 +165,7 @@ export function WorkFormStep({
 				<button
 					id='addWorkButton'
 					type='submit'
-					className={`w-full h-12 font-semibold rounded-2xl flex items-center justify-center gap-2 cursor-pointer ${
+					className={`select-none w-full h-12 font-semibold rounded-2xl flex items-center justify-center gap-2 cursor-pointer ${
 						isDark
 							? 'bg-white text-black hover:bg-neutral-100'
 							: 'bg-blue-600 text-white hover:bg-blue-700'

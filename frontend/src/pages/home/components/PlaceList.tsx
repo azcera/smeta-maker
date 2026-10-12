@@ -128,13 +128,13 @@ export function PlaceList({
 								</h2>
 								<button
 									onClick={() => showModalPlace(place, 'EDIT')}
-									className={`p-1.5 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-slate-200 text-slate-400'}`}
+									className={`select-none p-1.5 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-slate-200 text-slate-400'}`}
 									title='Редактировать'
 								>
 									<Pencil className='w-4 h-4' />
 								</button>
 							</div>
-							<div className='flex items-center gap-1'>
+							<div className='select-none flex items-center gap-1'>
 								<button
 									onClick={() => toggleCollapse(place.id)}
 									className={`p-1.5 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-slate-200 text-slate-400'}`}
@@ -213,7 +213,7 @@ export function PlaceList({
 						<button
 							id='addWorkButton'
 							onClick={() => onAddWorkClick(place.id)}
-							className={`${isCollapsed ? 'hidden' : ''} w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
+							className={`${isCollapsed ? 'hidden' : ''} select-none w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
 								isDark
 									? 'border-neutral-700 text-neutral-400 hover:bg-neutral-900'
 									: 'border-slate-300 text-slate-500 hover:bg-slate-50'

@@ -33,7 +33,7 @@ export default function Switcher({
 
 	return (
 		<div
-			className={`rounded-2xl p-5 ${
+			className={`select-none rounded-2xl p-5 ${
 				isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'
 			}`}
 		>
@@ -78,7 +78,7 @@ export default function Switcher({
 							min='0'
 							value={inputValue}
 							onChange={onInputChange}
-							className={` w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+							className={` w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
 								isDark
 									? 'bg-neutral-800 border border-neutral-700 text-white '
 									: 'bg-slate-50 border border-slate-200 text-slate-900 '

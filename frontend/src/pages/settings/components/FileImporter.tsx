@@ -29,7 +29,7 @@ export function FileImporter({
 			<button
 				onClick={() => fileInputRef.current?.click()}
 				disabled={loading}
-				className={`w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
+				className={` select-none w-full py-3 rounded-xl border border-dashed text-sm cursor-pointer transition-colors ${
 					isDark
 						? 'border-neutral-700 text-neutral-400 hover:bg-neutral-900'
 						: 'border-slate-300 text-slate-500 hover:bg-slate-50'
