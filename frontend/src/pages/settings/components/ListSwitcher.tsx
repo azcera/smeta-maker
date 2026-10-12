@@ -1,5 +1,4 @@
 import { ChevronDown, type LucideIcon } from 'lucide-react'
-import { useState } from 'react'
 import { useSmetaStore } from '../../../store/smetaStore'
 
 interface Props<T extends string> {
@@ -30,8 +29,6 @@ export default function ListSwitcher<T extends string>({
 	const { isDark } = useSmetaStore()
 
 	const IconToRender = isDark ? icons.dark : icons.light || icons.dark
-
-	const [isOpen, setIsOpen] = useState(false)
 
 	return (
 		<div
