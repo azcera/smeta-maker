@@ -4,9 +4,6 @@ import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useSmetaStore } from '../store/smetaStore'
 
-const TOUR_COMPLETED_KEY = 'hasSeenInteractiveTour'
-const TOUR_STEP_KEY = 'onboarding-step'
-
 /** Какой pathname нужен для шага (index) */
 const STEP_PATH: Record<number, string | RegExp> = {
 	0: '/',
@@ -85,8 +82,6 @@ export function InteractiveTour() {
 		} = useSmetaStore.getState()
 
 		if (isTourCompleted || !showTour) return
-
-		const isStartPage = location.pathname === '/'
 		const startIndex = tourStep !== null ? Number(tourStep) : 0
 
 		// ЗАЩИТА ОТ ОБНОВЛЕНИЯ СТРАНИЦЫ (F5)
