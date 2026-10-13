@@ -215,48 +215,39 @@ app.post('/api/generate-smeta', async (req: Request, res: Response) => {
 			}
 		}
 
-		// Транспортные расходы
-		if (transportCost) {
-			const transportRow = sheet.getRow(currentRow)
-			changeRowColor(transportRow, lightBlueColor)
-			transportRow.getCell(2).value = 'ТРАНСПОРТНЫЕ РАСХОДЫ'
-			transportRow.getCell(3).value = 'комплекс'
+		if (transportCost || trashCost) {
+			const transportOrTrashRow = sheet.getRow(currentRow)
+			changeRowColor(transportOrTrashRow, lightBlueColor)
+			let works: string[] = []
+			let price: number = 0
 
-			transportRow.getCell(4).value = 1
+			if (transportCost) {
+				works.push('ТРАНСПОРТНЫЕ РАСХОДЫ')
+				price += transportCost
+			}
 
-			transportRow.getCell(5).value = transportCost
-			transportRow.getCell(6).value = transportCost
-			transportRow.eachCell((cell, num) => {
+			if (trashCost) {
+				works.push('ВЫНОС, УБОРКА МУСОРА')
+				price += trashCost
+			}
+
+			transportOrTrashRow.getCell(2).value = works.join(' И ')
+			transportOrTrashRow.getCell(3).value = 'комплекс'
+			transportOrTrashRow.getCell(4).value = 1
+
+			transportOrTrashRow.getCell(5).value = price
+			transportOrTrashRow.getCell(6).value = {
+				formula: `D${currentRow}*E${currentRow}`
+			}
+			transportOrTrashRow.eachCell((cell, num) => {
 				cell.alignment = {
 					vertical: 'middle',
 					horizontal: num == 2 ? 'left' : 'center',
 					wrapText: true
 				}
 			})
-			transportRow.commit()
-			totalSum += Number(transportCost) || 0
-			currentRow++
-		}
-
-		if (trashCost) {
-			const trashRow = sheet.getRow(currentRow)
-			changeRowColor(trashRow, lightBlueColor)
-			trashRow.getCell(2).value = 'ВЫНОС И УБОРКА МУСОРА'
-			trashRow.getCell(3).value = 'комплекс'
-
-			trashRow.getCell(4).value = 1
-
-			trashRow.getCell(5).value = trashCost
-			trashRow.getCell(6).value = trashCost
-			trashRow.eachCell((cell, num) => {
-				cell.alignment = {
-					vertical: 'middle',
-					horizontal: num == 2 ? 'left' : 'center',
-					wrapText: true
-				}
-			})
-			trashRow.commit()
-			totalSum += Number(trashCost) || 0
+			transportOrTrashRow.commit()
+			totalSum += Number(price) || 0
 			currentRow++
 		}
 
