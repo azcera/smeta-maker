@@ -10,8 +10,6 @@ interface WorkSearchStepProps {
 	query: string
 	setQuery: (val: string) => void
 	filteredWorks: NormalizedWork[]
-	loading: boolean
-	error: string
 	isDark: boolean
 	currentPlaceName?: string
 	onBack: () => void
@@ -24,8 +22,6 @@ export function WorkSearchStep({
 	query,
 	setQuery,
 	filteredWorks,
-	loading,
-	error,
 	isDark,
 	currentPlaceName,
 	onBack,
@@ -108,15 +104,6 @@ export function WorkSearchStep({
 								/>
 							</div>
 						) : null}
-
-						{loading && (
-							<p className='text-sm text-center text-neutral-400'>
-								Загрузка базы...
-							</p>
-						)}
-						{error && (
-							<p className='text-sm text-center text-red-400'>{error}</p>
-						)}
 					</>
 				}
 			/>
@@ -132,7 +119,6 @@ export function WorkSearchStep({
 				}}
 			>
 				{query.length > 1 &&
-					!loading &&
 					filteredWorks.length > 0 &&
 					filteredWorks.slice(0, 50).map(item => {
 						if (openedCategory && item.category != openedCategory) return null
@@ -183,7 +169,7 @@ export function WorkSearchStep({
 						)
 					})}
 
-				{query.length > 1 && !loading && filteredWorks.length === 0 && (
+				{query.length > 1 && filteredWorks.length === 0 && (
 					<div className='text-center py-8'>
 						<p
 							className={`text-sm mb-4 ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}

@@ -4,11 +4,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { playTour } from '../../components/InteractiveTour'
 import { Header } from '../../components/layout/Header'
 import Modal from '../../components/Modal'
-import type { ViewTypes } from '../../store/smetaStore'
+import type { SwitcherOption } from '../../components/SelectComponent'
 import { FileImporter } from './components/FileImporter'
-import ListSwitcher, { type SwitcherOption } from './components/ListSwitcher'
+import ListSwitcher from './components/ListSwitcher'
 import Switcher from './components/Switcher'
 import { useSettings } from './hooks/useSettings'
+import type { ViewTypes } from '../../store/smetaStore'
 
 export default function SettingsPage() {
 	const navigate = useNavigate()
@@ -58,7 +59,7 @@ export default function SettingsPage() {
 		document.title = 'Создатель смет | Настройки'
 	}, [])
 
-	const viewTypeOptions: SwitcherOption<ViewTypes>[] = [
+	const viewTypeOptions: SwitcherOption[] = [
 		{ id: 'QUANTITY', name: 'Цена за единицу' },
 		{ id: 'TOTAL', name: 'Общая стоимость' }
 	]
@@ -132,7 +133,7 @@ export default function SettingsPage() {
 					description=''
 					title='Отображение'
 					options={viewTypeOptions}
-					setValue={setViewType}
+					setValue={v => setViewType(v as ViewTypes)}
 					value={viewType}
 				/>
 

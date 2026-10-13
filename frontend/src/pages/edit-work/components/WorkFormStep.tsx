@@ -1,6 +1,8 @@
 import { Save } from 'lucide-react'
 import type { RefObject, SubmitEvent } from 'react'
 import { Header } from '../../../components/layout/Header'
+import { SelectComponent } from '../../../components/SelectComponent'
+import { useSmetaStore } from '../../../store/smetaStore'
 
 interface WorkFormStepProps {
 	isNew: boolean
@@ -10,7 +12,7 @@ interface WorkFormStepProps {
 	setName: (val: string) => void
 	unit: string
 	setUnit: (val: string) => void
-	units: string[]
+
 	quantity: number
 	setQuantity: (val: number) => void
 	price: number
@@ -30,7 +32,6 @@ export function WorkFormStep({
 	setName,
 	unit,
 	setUnit,
-	units,
 	quantity,
 	setQuantity,
 	price,
@@ -46,6 +47,8 @@ export function WorkFormStep({
 			? 'bg-neutral-900 border border-neutral-700 text-white placeholder:text-neutral-500'
 			: 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400'
 	}`
+
+	const { dbUnits } = useSmetaStore()
 
 	return (
 		<div
@@ -87,28 +90,29 @@ export function WorkFormStep({
 						>
 							Ед. изм.
 						</label>
-						<select
-							value={unit}
-							onChange={e => {
-								setUnit(e.target.value)
-								if (e.target.value === 'комплекс') {
+
+						<SelectComponent
+							name='Единица измерения'
+							className={`relative flex justify-center items-center  select-none cursor-pointer max-w-full text-base rounded-lg `}
+							buttonClassName={`w-full flex items-center justify-between pr-10 appearance-none truncate text-left cursor-pointer px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+								isDark
+									? 'bg-neutral-900 border border-neutral-700 text-white placeholder:text-neutral-500'
+									: 'bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400'
+							}`}
+							options={dbUnits.map(u => {
+								return { id: u, name: u }
+							})}
+							setValue={value => {
+								setUnit(value)
+								if (value === 'комплекс') {
 									setTempQuantity(quantity)
 									setQuantity(1)
 								} else {
 									setQuantity(tempQuantity)
 								}
 							}}
-							className={inputClass}
-						>
-							{units.map(u => (
-								<option
-									key={u}
-									value={u}
-								>
-									{u}
-								</option>
-							))}
-						</select>
+							value={unit}
+						/>
 					</div>
 
 					<div>

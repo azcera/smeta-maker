@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { fetchWorks, normalizeDbWork } from '../api/smetaApi'
+import { fetchUnits, fetchWorks, normalizeDbWork } from '../api/smetaApi'
 import type { NormalizedWork, Place, PlacesArray, Work } from '../types'
 
 export type ViewTypes = 'TOTAL' | 'QUANTITY'
@@ -35,6 +35,10 @@ interface SmetaStore {
 	addPlace: (name: string) => string // возвращает id
 	removePlace: (placeId: string) => void
 	renamePlace: (placeId: string, name: string) => void
+
+	dbUnits: string[]
+	dbUnitsLoaded: boolean
+	loadDbUnits: () => Promise<void>
 
 	dbWorks: NormalizedWork[]
 	dbWorksLoaded: boolean
@@ -126,6 +130,23 @@ export const useSmetaStore = create<SmetaStore>()(
 
 			isReorder: false,
 			setIsReorder: value => set({ isReorder: value }),
+
+			dbUnits: [],
+			dbUnitsLoaded: false,
+			loadDbUnits: async () => {
+				if (get().dbUnitsLoaded) return
+
+				try {
+					let raw = await fetchUnits()
+					raw.push('комплекс')
+					set({
+						dbUnits: raw,
+						dbUnitsLoaded: true
+					})
+				} catch (err) {
+					console.error('Не удалось загрузить единицы измерения', err)
+				}
+			},
 
 			dbWorks: [],
 			dbWorksLoaded: false,
@@ -267,7 +288,9 @@ export const useSmetaStore = create<SmetaStore>()(
 				isSearchMethod: state.isSearchMethod,
 				isTourCompleted: state.isTourCompleted,
 				tourStep: state.tourStep,
-				showTour: state.showTour
+				showTour: state.showTour,
+				dbUnits: state.dbUnits,
+				dbUnitsLoaded: state.dbUnitsLoaded
 			})
 		}
 	)

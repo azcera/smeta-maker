@@ -40,16 +40,6 @@ export default function EditWorkPage() {
 	const [price, setPrice] = useState(0)
 	const [fromDb, setFromDb] = useState(false)
 
-	const [units, setUnits] = useState<string[]>([
-		'м²',
-		'м³',
-		'м.п.',
-		'шт',
-		'комплекс'
-	])
-	const [loading, setLoading] = useState(false)
-	const [error, setError] = useState('')
-
 	const [isErrorModal, setIsErrorModal] = useState(false)
 	const [modalMessage, setModalMessage] = useState<ModalMessageType>({
 		title: 'Ошибка',
@@ -62,26 +52,6 @@ export default function EditWorkPage() {
 			? 'Создатель смет | Новая работа'
 			: 'Создатель смет | Редактирование работы'
 	}, [isNew])
-
-	useEffect(() => {
-		if (step !== 'search') return
-		const load = async () => {
-			try {
-				setLoading(true)
-				setError('')
-				let uniqueUnits = Array.from(
-					new Set(dbWorks.map(w => w.unit).filter(Boolean))
-				).sort()
-				uniqueUnits.push('комплекс')
-				if (uniqueUnits.length > 0) setUnits(uniqueUnits)
-			} catch (err) {
-				setError('Не удалось загрузить базу работ')
-			} finally {
-				setLoading(false)
-			}
-		}
-		load()
-	}, [step, dbWorks])
 
 	useEffect(() => {
 		if (existing) {
@@ -175,8 +145,6 @@ export default function EditWorkPage() {
 					query={query}
 					setQuery={setQuery}
 					filteredWorks={filtered}
-					loading={loading}
-					error={error}
 					isDark={isDark}
 					currentPlaceName={currentPlace?.name}
 					onBack={() => navigate('/')}
@@ -193,7 +161,6 @@ export default function EditWorkPage() {
 					setName={setName}
 					unit={unit}
 					setUnit={setUnit}
-					units={units}
 					quantity={quantity}
 					setQuantity={setQuantity}
 					price={price}
