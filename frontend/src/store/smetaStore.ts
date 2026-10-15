@@ -284,13 +284,11 @@ export const useSmetaStore = create<SmetaStore>()(
 				isTrashCost: state.isTrashCost,
 				viewType: state.viewType,
 				dbWorks: state.dbWorks,
-				dbWorksLoaded: state.dbWorksLoaded,
 				isSearchMethod: state.isSearchMethod,
 				isTourCompleted: state.isTourCompleted,
 				tourStep: state.tourStep,
 				showTour: state.showTour,
-				dbUnits: state.dbUnits,
-				dbUnitsLoaded: state.dbUnitsLoaded
+				dbUnits: state.dbUnits
 			})
 		}
 	)

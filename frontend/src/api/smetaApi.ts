@@ -58,6 +58,7 @@ export async function generateSmeta(payload: {
 	}
 
 	const blob = await res.blob()
+
 	return new Blob([blob], {
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 	})

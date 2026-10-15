@@ -53,57 +53,28 @@ export function useSmetaExport(onError: (msg: ModalMessageType) => void) {
 				trashCost: isTrashCost && trashCost !== 0 ? trashCost : undefined
 			})
 
-			// Важно: убеждаемся, что тип правильный
-			const fileBlob = new Blob([blob], {
-				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-			})
-
 			const safeName = slugify(objectName, {
 				lower: true,
 				replacement: '_',
 				locale: 'ru',
-				strict: true // ← добавьте strict: true
+				strict: true
 			}).substring(0, 40)
 
-			// Лучше использовать только латиницу + цифры
 			const fileName = `smeta_${safeName || 'document'}.xlsx`
 
-			const file = new File([fileBlob], fileName, {
-				type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-				lastModified: Date.now()
-			})
-
-			const canShare =
-				typeof navigator.share === 'function' &&
-				navigator.canShare?.({ files: [file] })
-
-			if (canShare) {
-				try {
-					await navigator.share({
-						files: [file],
-						title: fileName
-					})
-					return
-				} catch (shareErr: any) {
-					if (shareErr.name === 'AbortError') return
-					console.warn('Share failed, falling back', shareErr)
-				}
-			}
-
-			// Fallback (особенно важен для Android и десктопа)
-			const url = URL.createObjectURL(fileBlob)
+			// Скачиваем именно XLSX, без дополнительного File и navigator.share
+			const url = URL.createObjectURL(blob)
 			const a = document.createElement('a')
+
 			a.href = url
 			a.download = fileName
 			a.style.display = 'none'
+
 			document.body.appendChild(a)
 			a.click()
+			a.remove()
 
-			// На iOS иногда нужно чуть подождать перед revoke
-			setTimeout(() => {
-				document.body.removeChild(a)
-				URL.revokeObjectURL(url)
-			}, 150)
+			setTimeout(() => URL.revokeObjectURL(url), 5000)
 		} catch (err: any) {
 			onError({
 				title: 'Ошибка',
