@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { useSmetaStore } from '../../store/smetaStore'
 
 interface Props {
@@ -8,7 +7,9 @@ interface Props {
 
 export function ErrorPage({ title, desc }: Props) {
 	const { isDark } = useSmetaStore()
-	const navigate = useNavigate()
+	const handleGoHome = () => {
+		window.location.href = '/'
+	}
 	return (
 		<div
 			className={`fixed inset-0 flex flex-col items-center justify-center transition-colors ${
@@ -49,7 +50,7 @@ export function ErrorPage({ title, desc }: Props) {
 						? 'bg-white text-black hover:bg-neutral-100'
 						: 'bg-blue-600 text-white hover:bg-blue-700'
 				} disabled:opacity-40 disabled:cursor-not-allowed`}
-				onClick={() => navigate('/')}
+				onClick={handleGoHome}
 			>
 				На главную
 			</button>

@@ -53,7 +53,7 @@ export default function ListSwitcher({
 				</div>
 
 				<SelectComponent
-					name='Режим отображения'
+					name={title}
 					options={options}
 					setValue={setValue}
 					value={value}

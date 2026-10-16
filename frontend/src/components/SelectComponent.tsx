@@ -113,7 +113,7 @@ export function SelectComponent({
 			ref={containerRef}
 			className={
 				className ??
-				`${themeClasses} py-1 relative flex p-1 justify-center items-center rounded-lg cursor-pointer select-none max-w-full text-base truncate`
+				`${themeClasses} py-1 relative flex p-1 justify-center items-center rounded-lg cursor-pointer select-none max-w-full text-base overflow-visible`
 			}
 		>
 			<button
