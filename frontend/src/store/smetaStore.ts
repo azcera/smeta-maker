@@ -72,7 +72,7 @@ interface SmetaStore {
 
 export const useSmetaStore = create<SmetaStore>()(
 	persist(
-		(set, get) => ({
+		set => ({
 			objectName: '',
 			setObjectName: name => set({ objectName: name }),
 
