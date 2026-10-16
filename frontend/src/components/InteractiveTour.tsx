@@ -261,7 +261,7 @@ export function InteractiveTour() {
 						},
 						onHighlightStarted: () => {
 							document.body.classList.add('tour-allow-all-clicks')
-							useSmetaStore.getState().loadDbWorks()
+							useSmetaStore.getState().checkUpdates()
 						},
 						onHighlighted: (_e, _, { driver }) => {
 							setTourStep(4)

@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { fetchUnits, fetchWorks, normalizeDbWork } from '../api/smetaApi'
+import { fetchWorks, getLastUpdateTime, normalizeDbWork } from '../api/smetaApi'
 import type { NormalizedWork, Place, PlacesArray, Work } from '../types'
 
 export type ViewTypes = 'TOTAL' | 'QUANTITY'
@@ -38,11 +38,9 @@ interface SmetaStore {
 
 	dbUnits: string[]
 	dbUnitsLoaded: boolean
-	loadDbUnits: () => Promise<void>
 
 	dbWorks: NormalizedWork[]
 	dbWorksLoaded: boolean
-	loadDbWorks: () => Promise<void>
 	addWork: (placeId: string, work: Omit<Work, 'id'>) => void
 	updateWork: (placeId: string, workId: string, data: Partial<Work>) => void
 	removeWork: (placeId: string, workId: string) => void
@@ -65,6 +63,11 @@ interface SmetaStore {
 	setTourStep: (value: number | null) => void
 	setIsTourCompleted: (value: boolean) => void
 	setShowTour: (value: boolean) => void
+
+	dbUpdateTime: number | null
+	setDbUpdateTime: (value: number) => void
+
+	checkUpdates: () => Promise<void>
 }
 
 export const useSmetaStore = create<SmetaStore>()(
@@ -133,37 +136,9 @@ export const useSmetaStore = create<SmetaStore>()(
 
 			dbUnits: [],
 			dbUnitsLoaded: false,
-			loadDbUnits: async () => {
-				if (get().dbUnitsLoaded) return
-
-				try {
-					let raw = await fetchUnits()
-					raw.push('комплекс')
-					set({
-						dbUnits: raw,
-						dbUnitsLoaded: true
-					})
-				} catch (err) {
-					console.error('Не удалось загрузить единицы измерения', err)
-				}
-			},
 
 			dbWorks: [],
 			dbWorksLoaded: false,
-			loadDbWorks: async () => {
-				if (get().dbWorksLoaded) return // уже загружено — выходим
-
-				try {
-					const raw = await fetchWorks()
-					const normalized = raw.map(normalizeDbWork)
-					set({
-						dbWorks: normalized,
-						dbWorksLoaded: true
-					})
-				} catch (err) {
-					console.error('Не удалось загрузить базу работ', err)
-				}
-			},
 
 			addWork: (placeId, work) =>
 				set(state => ({
@@ -268,7 +243,34 @@ export const useSmetaStore = create<SmetaStore>()(
 			setShowTour: value =>
 				set({
 					showTour: value
-				})
+				}),
+			dbUpdateTime: null,
+			setDbUpdateTime: value => set({ dbUpdateTime: value }),
+
+			checkUpdates: async () => {
+				try {
+					const serverTime = await getLastUpdateTime()
+
+					// Обновление не требуется
+					if (serverTime === null) return
+
+					// Загружаем обе базы параллельно
+					const { works, units } = await fetchWorks()
+
+					// Сохраняем данные только после успешной загрузки обеих баз
+					set({
+						dbWorks: works.map(normalizeDbWork),
+						dbWorksLoaded: true,
+
+						dbUnits: [...units, 'комплекс'],
+						dbUnitsLoaded: true,
+
+						dbUpdateTime: serverTime
+					})
+				} catch (err) {
+					console.error('Не удалось проверить обновления базы', err)
+				}
+			}
 		}),
 
 		{
@@ -288,7 +290,8 @@ export const useSmetaStore = create<SmetaStore>()(
 				isTourCompleted: state.isTourCompleted,
 				tourStep: state.tourStep,
 				showTour: state.showTour,
-				dbUnits: state.dbUnits
+				dbUnits: state.dbUnits,
+				dbUpdateTime: state.dbUpdateTime
 			})
 		}
 	)

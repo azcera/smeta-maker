@@ -1,7 +1,7 @@
-import path from 'path'
+import cors from 'cors'
 import dotenv from 'dotenv'
 import express, { NextFunction, Request, Response } from 'express'
-import cors from 'cors'
+import path from 'path'
 
 if (process.env.NODE_ENV !== 'production') {
 	dotenv.config({
@@ -11,8 +11,9 @@ if (process.env.NODE_ENV !== 'production') {
 	dotenv.config()
 }
 
-import listRouter from './routes/list'
 import generateSmetaRouter from './routes/generateSmeta'
+import getUpdateTime from './routes/getUpdateTime'
+import listRouter from './routes/list'
 import uploadSmetaRouter from './routes/uploadSmeta'
 
 const app = express()
@@ -29,5 +30,6 @@ app.use('/api', (req: Request, res: Response, next: NextFunction) => {
 app.use('/api/list', listRouter)
 app.use('/api/generate-smeta', generateSmetaRouter)
 app.use('/api/upload-smeta', uploadSmetaRouter)
+app.use('/api/get-update-time', getUpdateTime)
 
 export default app

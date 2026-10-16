@@ -11,12 +11,11 @@ import { useSmetaStore } from './store/smetaStore'
 import { useIsScreenTooSmall } from './utils/hooks/useIsScreenTooSmall'
 
 function App() {
-	const { loadDbWorks, showTour, loadDbUnits } = useSmetaStore()
+	const { checkUpdates, showTour } = useSmetaStore()
 
 	useEffect(() => {
-		loadDbWorks()
-		loadDbUnits()
-	}, [])
+		checkUpdates()
+	}, [checkUpdates])
 
 	const isTooSmall = useIsScreenTooSmall(300)
 

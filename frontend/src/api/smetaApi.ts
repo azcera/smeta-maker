@@ -1,15 +1,30 @@
+import { useSmetaStore } from '../store/smetaStore'
 import type { DbWork, NormalizedWork } from '../types'
 
 const API_URL = import.meta.env.VITE_API_URL
 
 /** Получить все работы из БД */
-export async function fetchWorks(): Promise<DbWork[]> {
+export async function fetchWorks(): Promise<{
+	works: DbWork[]
+	units: string[]
+}> {
 	const res = await fetch(`${API_URL}/list`)
 	if (!res.ok) {
 		throw new Error('Не удалось загрузить список работ')
 	}
 	const data = await res.json()
-	return Array.isArray(data) ? data : []
+	const works = Array.isArray(data) ? data : []
+	const units = new Set<string>()
+	works.forEach(w => {
+		if (w.izmer && typeof w.izmer === 'string') {
+			units.add(w.izmer.trim())
+		}
+	})
+
+	return {
+		works: works,
+		units: Array.from(units).sort()
+	}
 }
 
 /** Нормализация одной работы */
@@ -23,18 +38,34 @@ export function normalizeDbWork(item: DbWork): NormalizedWork {
 	}
 }
 
-/** Получить уникальные единицы измерения */
-export async function fetchUnits(): Promise<string[]> {
-	const works = await fetchWorks()
-	const units = new Set<string>()
+// if true => last time update
+export async function getLastUpdateTime(): Promise<number | null> {
+	const res = await fetch(`${API_URL}/get-update-time`)
 
-	works.forEach(w => {
-		if (w.izmer && typeof w.izmer === 'string') {
-			units.add(w.izmer.trim())
-		}
-	})
+	if (!res.ok) {
+		throw new Error('Не удалось загрузить время обновления')
+	}
 
-	return Array.from(units).sort()
+	const data = await res.json()
+
+	if (!data || Array.isArray(data) || !data.updated_at) {
+		return null
+	}
+
+	const serverTime = new Date(data.updated_at).getTime()
+
+	if (!Number.isFinite(serverTime)) {
+		throw new Error('Не удалось прочитать время обновления')
+	}
+
+	const { dbUpdateTime } = useSmetaStore.getState()
+
+	// Если локального времени нет или серверная база новее
+	if (dbUpdateTime === null || serverTime > dbUpdateTime) {
+		return serverTime
+	}
+
+	return null
 }
 
 export async function generateSmeta(payload: {
