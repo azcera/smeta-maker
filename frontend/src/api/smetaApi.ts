@@ -8,22 +8,22 @@ export async function fetchWorks(): Promise<{
 	works: DbWork[]
 	units: string[]
 }> {
-	const res = await fetch(`${API_URL}/list`)
-	if (!res.ok) {
+	const resWorks = await fetch(`${API_URL}/list`)
+	if (!resWorks.ok) {
 		throw new Error('Не удалось загрузить список работ')
 	}
-	const data = await res.json()
-	const works = Array.isArray(data) ? data : []
-	const units = new Set<string>()
-	works.forEach(w => {
-		if (w.izmer && typeof w.izmer === 'string') {
-			units.add(w.izmer.trim())
-		}
-	})
 
+	const dataWorks = await resWorks.json()
+
+	const resUnits = await fetch(`${API_URL}/units`)
+	if (!resUnits.ok) {
+		throw new Error('Не удалось загрузить список единиц измерения')
+	}
+
+	const dataUnits = await resUnits.json()
 	return {
-		works: works,
-		units: Array.from(units).sort()
+		works: Array.isArray(dataWorks) ? dataWorks : [],
+		units: Array.isArray(dataUnits) ? dataUnits : []
 	}
 }
 

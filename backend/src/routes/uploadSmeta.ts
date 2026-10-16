@@ -1,6 +1,7 @@
-import { Router, Request, Response } from 'express'
-import multer from 'multer'
 import ExcelJS from 'exceljs'
+import { Request, Response, Router } from 'express'
+import multer from 'multer'
+import { unitAdapter } from '../utils/unitAdapter'
 
 const router = Router()
 
@@ -54,8 +55,14 @@ router.post(
 				const col1 = row.getCell(1).toString().trim()
 				const col2 = row.getCell(2).toString().trim()
 
-				if (col2.includes('ИТОГО:')) {
+				// Общий итог сметы — заканчиваем импорт
+				if (col2 === 'ИТОГО:') {
 					isEnd = true
+					return
+				}
+
+				// Промежуточный итог помещения — пропускаем строку
+				if (/^ИТОГО:\s*\S+/i.test(col2)) {
 					return
 				}
 
@@ -86,7 +93,7 @@ router.post(
 						name: col2,
 						price: getNumValue(row.getCell(5)),
 						quantity: getNumValue(row.getCell(4)),
-						unit: row.getCell(3).toString()
+						unit: unitAdapter(row.getCell(3).toString())
 					})
 				}
 			})

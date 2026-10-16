@@ -14,6 +14,7 @@ if (process.env.NODE_ENV !== 'production') {
 import generateSmetaRouter from './routes/generateSmeta'
 import getUpdateTime from './routes/getUpdateTime'
 import listRouter from './routes/list'
+import unitsRouter from './routes/units'
 import uploadSmetaRouter from './routes/uploadSmeta'
 
 const app = express()
@@ -31,5 +32,6 @@ app.use('/api/list', listRouter)
 app.use('/api/generate-smeta', generateSmetaRouter)
 app.use('/api/upload-smeta', uploadSmetaRouter)
 app.use('/api/get-update-time', getUpdateTime)
+app.use('/api/units', unitsRouter)
 
 export default app

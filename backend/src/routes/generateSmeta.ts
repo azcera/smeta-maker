@@ -1,9 +1,9 @@
-import { Router, Request, Response } from 'express'
 import ExcelJS from 'exceljs'
+import { Request, Response, Router } from 'express'
 import slugify from 'slugify'
 
 import { TEMPLATE_BASE64 } from '../templateBase64'
-import { changeRowColor, setBorderRange, EXCEL_COLORS } from '../utils/excel'
+import { changeRowColor, EXCEL_COLORS, setBorderRange } from '../utils/excel'
 
 const router = Router()
 
@@ -41,6 +41,10 @@ router.post('/', async (req: Request, res: Response) => {
 		if (Object.entries(places).length === 0) {
 			throw new Error('Добавляемые работы невозможно обработать')
 		}
+		const placeEntries = Object.entries(places)
+		const hasMultiplePlaces = placeEntries.length > 1
+
+		const totalParts: string[] = []
 
 		const workbook = new ExcelJS.Workbook()
 
@@ -64,7 +68,7 @@ router.post('/', async (req: Request, res: Response) => {
 		let currentRow = 9
 
 		// Работы по помещениям
-		for (const [placeName, works] of Object.entries(places)) {
+		for (const [placeName, works] of placeEntries) {
 			let num = 1
 
 			const placeRow = sheet.getRow(currentRow)
@@ -85,6 +89,9 @@ router.post('/', async (req: Request, res: Response) => {
 
 			placeRow.commit()
 			currentRow++
+
+			// Запоминаем начало диапазона работ помещения
+			const workStartRow = currentRow
 
 			for (const work of works) {
 				const quantity = Number(work.quantity) || 0
@@ -111,6 +118,79 @@ router.post('/', async (req: Request, res: Response) => {
 				})
 
 				row.commit()
+				currentRow++
+			}
+
+			// Диапазон строк с работами текущего помещения
+			const workEndRow = currentRow - 1
+
+			if (workEndRow >= workStartRow) {
+				const workRange = `F${workStartRow}:F${workEndRow}`
+
+				// Для одного помещения используем непосредственно работы.
+				// Для нескольких помещений ниже добавим промежуточные итоги.
+				if (!hasMultiplePlaces) {
+					totalParts.push(workRange)
+				}
+			}
+
+			// Промежуточный итог помещения нужен только при нескольких помещениях
+			// Промежуточный итог помещения нужен только при нескольких помещениях
+			if (hasMultiplePlaces) {
+				const subtotalRow = sheet.getRow(currentRow)
+
+				// Применяем фон ко всем ячейкам строки A:F
+				for (let col = 1; col <= 6; col++) {
+					const cell = subtotalRow.getCell(col)
+
+					cell.fill = {
+						type: 'pattern',
+						pattern: 'solid',
+						fgColor: { argb: 'FFC5D9F1' }
+					}
+
+					cell.font = {
+						...cell.font,
+						italic: true
+					}
+				}
+
+				subtotalRow.getCell(2).value = `ИТОГО: ${placeName}`
+				subtotalRow.getCell(2).font = {
+					...subtotalRow.getCell(2).font,
+					bold: true,
+					italic: true
+				}
+
+				subtotalRow.getCell(6).value =
+					workEndRow >= workStartRow
+						? {
+								formula: `SUM(F${workStartRow}:F${workEndRow})`
+							}
+						: 0
+
+				subtotalRow.getCell(6).font = {
+					...subtotalRow.getCell(6).font,
+					bold: true,
+					italic: true
+				}
+
+				subtotalRow.getCell(6).numFmt = '#,##0"р."'
+
+				subtotalRow.eachCell({ includeEmpty: true }, (cell, colNum) => {
+					cell.alignment = {
+						wrapText: true,
+						horizontal: colNum === 2 ? 'left' : 'center',
+						vertical: 'middle'
+					}
+				})
+
+				subtotalRow.commit()
+
+				// Добавляем итог помещения в общий итог сметы
+				totalParts.push(`F${currentRow}`)
+
+				// Обязательно переходим на следующую строку
 				currentRow++
 			}
 		}
@@ -151,6 +231,8 @@ router.post('/', async (req: Request, res: Response) => {
 			})
 
 			row.commit()
+			totalParts.push(`F${currentRow}`)
+
 			currentRow++
 		}
 
@@ -167,7 +249,7 @@ router.post('/', async (req: Request, res: Response) => {
 		}
 
 		totalRow.getCell(6).value = {
-			formula: `SUM(F9:F${currentRow - 1})`
+			formula: totalParts.length ? `SUM(${totalParts.join(',')})` : '0'
 		}
 
 		totalRow.getCell(6).font = {

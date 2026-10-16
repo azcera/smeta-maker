@@ -1,7 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useSmetaStore } from '../store/smetaStore'
-import { normalizeUnit } from '../utils/normalizeUnit'
 
 export type SwitcherOption = {
 	id: string
@@ -34,9 +33,7 @@ export function SelectComponent({
 		? 'bg-neutral-800 text-white'
 		: 'bg-slate-50 text-black'
 
-	const selected = options.find(
-		o => normalizeUnit(o.id) === normalizeUnit(value)
-	)
+	const selected = options.find(o => o.id === value)
 
 	// Определяем мобильное устройство
 	useEffect(() => {
