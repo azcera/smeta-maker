@@ -3,7 +3,6 @@ import {
 	DndContext,
 	DragOverlay,
 	PointerSensor,
-	TouchSensor,
 	useSensor,
 	useSensors,
 	type DragEndEvent,
@@ -23,13 +22,15 @@ interface PlaceListProps {
 	isDark: boolean
 	onRemovePlace: (id: string) => void
 	onAddWorkClick: (placeId: string) => void
+	canReorder: boolean
 }
 
 export function PlaceList({
 	places,
 	isDark,
 	onRemovePlace,
-	onAddWorkClick
+	onAddWorkClick,
+	canReorder
 }: PlaceListProps) {
 	const { isReorder, reorderWork } = useSmetaStore()
 
@@ -45,10 +46,10 @@ export function PlaceList({
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
-			activationConstraint: { distance: 8 }
-		}),
-		useSensor(TouchSensor, {
-			activationConstraint: { delay: 120, tolerance: 8 }
+			activationConstraint: {
+				distance: 8
+			},
+			disabled: !canReorder
 		})
 	)
 
@@ -175,7 +176,7 @@ export function PlaceList({
 										<SortableContext
 											items={place.works.map(w => w.id)}
 											strategy={verticalListSortingStrategy}
-											disabled={!isReorder}
+											disabled={!isReorder || !canReorder}
 										>
 											{place.works.map(work => (
 												<WorkItem

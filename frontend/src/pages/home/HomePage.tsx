@@ -83,6 +83,31 @@ export default function HomePage() {
 		})
 	}
 
+	const [canReorder, setCanReorder] = useState(true)
+
+	useEffect(() => {
+		const container = scrollContainerRef.current
+		if (!container) return
+
+		const handleScroll = () => {
+			console.log('scroll')
+			setCanReorder(false)
+		}
+
+		const handleScrollEnd = () => {
+			console.log('scroll end')
+			setCanReorder(true)
+		}
+
+		container.addEventListener('scroll', handleScroll, { passive: true })
+		container.addEventListener('scrollend', handleScrollEnd)
+
+		return () => {
+			container.removeEventListener('scroll', handleScroll)
+			container.removeEventListener('scrollend', handleScrollEnd)
+		}
+	}, [])
+
 	return (
 		<div
 			id='homePage'
@@ -100,6 +125,7 @@ export default function HomePage() {
 				}}
 			>
 				<PlaceList
+					canReorder={canReorder}
 					places={places}
 					isDark={isDark}
 					onRemovePlace={removePlace}

@@ -2,39 +2,78 @@ import React, { useCallback, useRef } from 'react'
 
 type PressEventHandler = (e: React.MouseEvent | React.TouchEvent) => void
 
-// Кастомный хук с типами
-export function useLongPress(callback: PressEventHandler, ms: number = 500) {
-	// В браузере setTimeout возвращает number, типизируем через NodeJS.Timeout или number
+export function useLongPress(
+	callback: PressEventHandler,
+	ms: number = 800,
+	moveThreshold = 10
+) {
 	const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-	const start = useCallback(
-		(e: React.MouseEvent | React.TouchEvent) => {
-			// Отключаем вызов контекстного меню на iOS при таче
-			if (e.target instanceof HTMLElement) {
-				e.target.style.setProperty('-webkit-touch-callout', 'none')
-			}
-
-			// Запускаем таймер
-			timerRef.current = setTimeout(() => {
-				callback(e)
-			}, ms)
-		},
-		[callback, ms]
-	)
+	const startPositionRef = useRef<{ x: number; y: number } | null>(null)
+	const triggeredRef = useRef(false)
 
 	const stop = useCallback(() => {
-		if (timerRef.current) {
+		if (timerRef.current !== null) {
 			clearTimeout(timerRef.current)
 			timerRef.current = null
 		}
 	}, [])
 
-	// Возвращаем строго типизированный объект с обработчиками событий
+	const start = useCallback(
+		(e: React.MouseEvent | React.TouchEvent) => {
+			stop()
+
+			const point = 'touches' in e ? e.touches[0] : e
+
+			if (!point) return
+
+			startPositionRef.current = {
+				x: point.clientX,
+				y: point.clientY
+			}
+			triggeredRef.current = false
+
+			timerRef.current = setTimeout(() => {
+				triggeredRef.current = true
+				callback(e)
+				timerRef.current = null
+			}, ms)
+		},
+		[callback, ms, stop]
+	)
+
+	const move = useCallback(
+		(e: React.TouchEvent | React.MouseEvent) => {
+			const startPosition = startPositionRef.current
+			if (!startPosition) return
+
+			const point = 'touches' in e ? e.touches[0] : e
+
+			if (!point) return
+
+			const dx = point.clientX - startPosition.x
+			const dy = point.clientY - startPosition.y
+
+			if (Math.hypot(dx, dy) > moveThreshold) {
+				stop()
+				startPositionRef.current = null
+			}
+		},
+		[moveThreshold, stop]
+	)
+
+	const end = useCallback(() => {
+		stop()
+		startPositionRef.current = null
+	}, [stop])
+
 	return {
 		onMouseDown: start,
-		onMouseUp: stop,
-		onMouseLeave: stop,
+		onMouseMove: move,
+		onMouseUp: end,
+		onMouseLeave: end,
 		onTouchStart: start,
-		onTouchEnd: stop
+		onTouchMove: move,
+		onTouchEnd: end,
+		onTouchCancel: end
 	}
 }

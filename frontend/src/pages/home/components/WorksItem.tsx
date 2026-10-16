@@ -46,6 +46,7 @@ export default function WorkItem({
 		attributes,
 		listeners,
 		setNodeRef,
+		setActivatorNodeRef,
 		transform,
 		transition,
 		isDragging
@@ -53,7 +54,10 @@ export default function WorkItem({
 		id: work.id,
 		disabled: !isReorder || isOverlay,
 		animateLayoutChanges: args =>
-			defaultAnimateLayoutChanges({ ...args, wasDragging: true })
+			defaultAnimateLayoutChanges({
+				...args,
+				wasDragging: true
+			})
 	})
 
 	const style: React.CSSProperties = {
@@ -86,14 +90,15 @@ export default function WorkItem({
 			id={id}
 			ref={isOverlay ? undefined : setNodeRef}
 			style={style}
-			className={isOverlay ? 'cursor-grabbing' : ''}
+			className={`${isOverlay ? 'cursor-grabbing' : ''} touch-pan-y select-none
+		[-webkit-touch-callout:none]`}
 		>
 			<div
 				className={`
-        rounded-2xl p-4 text-white relative shadow-lg select-none
-        ${isReorder && !isOverlay && !isDragging ? 'animate-wiggle' : ''}
-        ${isOverlay ? 'shadow-2xl scale-105' : ''}
-      `}
+		rounded-2xl p-4 text-white relative shadow-lg select-none
+		${isReorder && !isOverlay && !isDragging ? 'animate-wiggle' : ''}
+		${isOverlay ? 'shadow-2xl scale-105' : ''}
+	`}
 				style={{ backgroundColor: getUnitColor(work.unit) }}
 			>
 				<p className='font-medium text-[15px] leading-snug mb-3 text-center px-8'>
@@ -115,6 +120,7 @@ export default function WorkItem({
 				{!isOverlay && (
 					<>
 						<button
+							ref={setActivatorNodeRef}
 							id={isReorder ? 'reorderIcon' : undefined}
 							{...(isReorder ? { ...attributes, ...listeners } : {})}
 							onClick={
@@ -126,7 +132,9 @@ export default function WorkItem({
 											setIsDeleteModal(true)
 										}
 							}
-							className='absolute top-3 right-3 p-2 rounded-xl bg-black/20 hover:bg-black/40 transition-colors cursor-pointer z-10 touch-none'
+							className={`absolute top-3 right-3 p-2 rounded-xl
+		bg-black/20 hover:bg-black/40 transition-colors
+		cursor-pointer z-10 ${isReorder ? 'touch-none' : ''}`}
 						>
 							{isReorder ? (
 								<Menu className='w-4 h-4' />
@@ -140,7 +148,8 @@ export default function WorkItem({
 								{...longPressEvents}
 								to={`/works/${place.id}/${work.id}`}
 								onClick={handleLinkClick}
-								className='absolute inset-0 rounded-2xl z-0'
+								draggable={false}
+								className='absolute inset-0 rounded-2xl z-0 select-none [-webkit-touch-callout:none]'
 							/>
 						)}
 					</>
