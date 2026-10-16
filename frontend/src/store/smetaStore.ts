@@ -3,6 +3,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { fetchWorks, getLastUpdateTime, normalizeDbWork } from '../api/smetaApi'
 import type { NormalizedWork, Place, PlacesArray, Work } from '../types'
+import { normalizeUnit } from '../utils/normalizeUnit'
 
 export type ViewTypes = 'TOTAL' | 'QUANTITY'
 
@@ -165,7 +166,7 @@ export const useSmetaStore = create<SmetaStore>()(
 								name: item.name,
 								price: item.price,
 								quantity: item.quantity,
-								unit: item.unit
+								unit: normalizeUnit(item.unit)
 							}
 						})
 					})

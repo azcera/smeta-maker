@@ -58,6 +58,7 @@ export default function EditWorkPage() {
 			setName(existing.name)
 			setUnit(existing.unit)
 			setQuantity(existing.quantity)
+			setTempQuantity(existing.quantity)
 			setPrice(existing.price)
 			setFromDb(!!existing.fromDb)
 			setStep('form')

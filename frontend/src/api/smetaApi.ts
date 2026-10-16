@@ -1,5 +1,6 @@
 import { useSmetaStore } from '../store/smetaStore'
 import type { DbWork, NormalizedWork } from '../types'
+import { normalizeUnit } from '../utils/normalizeUnit'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -32,7 +33,7 @@ export function normalizeDbWork(item: DbWork): NormalizedWork {
 	return {
 		id: item._id,
 		name: item.vid || 'Без названия',
-		unit: item.izmer || 'шт',
+		unit: normalizeUnit(item.izmer) || 'шт.',
 		price: Number(item.price) || 0,
 		category: item.kategor || ''
 	}
