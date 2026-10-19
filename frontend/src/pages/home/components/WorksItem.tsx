@@ -38,7 +38,8 @@ export default function WorkItem({
 	isOverlay = false,
 	id
 }: Props) {
-	const { removeWork, viewType, isReorder, setIsReorder } = useSmetaStore()
+	const { removeWork, viewType, isReorder, setIsReorder, isSolidView } =
+		useSmetaStore()
 	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const longPressedRef = useRef(false)
 
@@ -85,6 +86,8 @@ export default function WorkItem({
 			return
 		}
 	}
+
+	const workIndex = place.works.indexOf(work) + 1
 	return (
 		<div
 			id={id}
@@ -101,11 +104,19 @@ export default function WorkItem({
 	`}
 				style={{ backgroundColor: getUnitColor(work.unit) }}
 			>
-				<p className='font-medium text-[15px] leading-snug mb-3 text-center px-8'>
-					{work.name}
+				<p
+					className={`${isSolidView ? 'hidden' : ''} absolute top-3.5 left-3 
+	 z-10 ${isReorder ? 'touch-none' : ''}`}
+				>
+					{workIndex}.
+				</p>
+				<p
+					className={`font-medium text-[15px] wrap-break-word leading-snug  ${isSolidView ? 'pr-8' : 'text-center mb-3 px-8'} `}
+				>
+					{isSolidView ? `${workIndex}. ${work.name}` : work.name}
 				</p>
 
-				<div className='flex gap-2'>
+				<div className={`gap-2 ${isSolidView ? 'hidden' : 'flex'}`}>
 					<span className='flex-1 text-center px-2.5 py-1 rounded-lg text-xs font-medium bg-black/25'>
 						x{work.quantity}
 					</span>

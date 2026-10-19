@@ -45,6 +45,7 @@ router.post('/', async (req: Request, res: Response) => {
 		const hasMultiplePlaces = placeEntries.length > 1
 
 		const totalParts: string[] = []
+		let totals: number[] = []
 
 		const workbook = new ExcelJS.Workbook()
 
@@ -70,6 +71,7 @@ router.post('/', async (req: Request, res: Response) => {
 		// Работы по помещениям
 		for (const [placeName, works] of placeEntries) {
 			let num = 1
+			let total = 0
 
 			const placeRow = sheet.getRow(currentRow)
 
@@ -105,8 +107,11 @@ router.post('/', async (req: Request, res: Response) => {
 				row.getCell(5).value = price
 				row.getCell(5).numFmt = '#,##0"р."'
 
+				total += quantity * price
+
 				row.getCell(6).value = {
-					formula: `D${currentRow}*E${currentRow}`
+					formula: `D${currentRow}*E${currentRow}`,
+					result: quantity * price
 				}
 
 				row.eachCell((cell, colNum) => {
@@ -122,6 +127,7 @@ router.post('/', async (req: Request, res: Response) => {
 			}
 
 			// Диапазон строк с работами текущего помещения
+			totals.push(total)
 			const workEndRow = currentRow - 1
 
 			if (workEndRow >= workStartRow) {
@@ -165,7 +171,8 @@ router.post('/', async (req: Request, res: Response) => {
 				subtotalRow.getCell(6).value =
 					workEndRow >= workStartRow
 						? {
-								formula: `SUM(F${workStartRow}:F${workEndRow})`
+								formula: `SUM(F${workStartRow}:F${workEndRow})`,
+								result: totals[totals.length - 1]
 							}
 						: 0
 
@@ -219,8 +226,11 @@ router.post('/', async (req: Request, res: Response) => {
 			row.getCell(4).value = 1
 			row.getCell(5).value = price
 			row.getCell(6).value = {
-				formula: `D${currentRow}*E${currentRow}`
+				formula: `D${currentRow}*E${currentRow}`,
+				result: price
 			}
+
+			totals.push(price)
 
 			row.eachCell((cell, colNum) => {
 				cell.alignment = {
@@ -248,8 +258,12 @@ router.post('/', async (req: Request, res: Response) => {
 			color: { argb: `FF${EXCEL_COLORS.white}` }
 		}
 
+		let total = 0
+		totals.forEach(v => (total += v))
+
 		totalRow.getCell(6).value = {
-			formula: totalParts.length ? `SUM(${totalParts.join(',')})` : '0'
+			formula: totalParts.length ? `SUM(${totalParts.join(',')})` : '0',
+			result: total
 		}
 
 		totalRow.getCell(6).font = {

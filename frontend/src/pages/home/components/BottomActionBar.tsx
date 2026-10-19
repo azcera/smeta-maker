@@ -1,4 +1,4 @@
-import { Check, Download, Settings, Trash2 } from 'lucide-react'
+import { Check, Download, Eye, EyeClosed, Settings, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSmetaStore } from '../../../store/smetaStore'
 
@@ -17,8 +17,15 @@ export function BottomActionBar({
 	onDeleteClick,
 	onSaveClick
 }: BottomActionBarProps) {
-	const { isDark, viewType, setViewType, isReorder, setIsReorder } =
-		useSmetaStore()
+	const {
+		isDark,
+		viewType,
+		setViewType,
+		isReorder,
+		setIsReorder,
+		setIsSolidView,
+		isSolidView
+	} = useSmetaStore()
 
 	return (
 		<div className='fixed bottom-0 left-0 right-0 z-20'>
@@ -86,6 +93,24 @@ export function BottomActionBar({
 							</>
 						)}
 					</button>
+
+					{!isReorder && (
+						<button
+							type='button'
+							onClick={() => setIsSolidView(!isSolidView)}
+							className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+								isDark
+									? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300'
+									: 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+							}`}
+						>
+							{isSolidView ? (
+								<EyeClosed className='w-5 h-5 text-white' />
+							) : (
+								<Eye className='w-5 h-5 text-white' />
+							)}
+						</button>
+					)}
 
 					{!isReorder && (
 						<Link

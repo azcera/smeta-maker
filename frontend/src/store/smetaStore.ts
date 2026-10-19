@@ -68,6 +68,9 @@ interface SmetaStore {
 	setDbUpdateTime: (value: number) => void
 
 	checkUpdates: () => Promise<void>
+
+	isSolidView: boolean
+	setIsSolidView: (value: boolean) => void
 }
 
 export const useSmetaStore = create<SmetaStore>()(
@@ -270,7 +273,13 @@ export const useSmetaStore = create<SmetaStore>()(
 				} catch (err) {
 					console.error('Не удалось проверить обновления базы', err)
 				}
-			}
+			},
+
+			isSolidView: false,
+			setIsSolidView: value =>
+				set({
+					isSolidView: value
+				})
 		}),
 
 		{
@@ -291,7 +300,8 @@ export const useSmetaStore = create<SmetaStore>()(
 				tourStep: state.tourStep,
 				showTour: state.showTour,
 				dbUnits: state.dbUnits,
-				dbUpdateTime: state.dbUpdateTime
+				dbUpdateTime: state.dbUpdateTime,
+				isSolidView: state.isSolidView
 			})
 		}
 	)

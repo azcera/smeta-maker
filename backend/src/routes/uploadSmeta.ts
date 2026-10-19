@@ -66,15 +66,12 @@ router.post(
 					return
 				}
 
-				if (col2.includes('ТРАНСПОРТНЫЕ РАСХОДЫ')) {
+				if (col2.includes('ТРАНСПОРТНЫЕ РАС')) {
 					transportCost = getNumValue(row.getCell(5))
 					return
 				}
 
-				if (
-					col2.includes('ВЫНОС И УБОРКА МУСОРА') ||
-					col2.includes('ВЫНОС, УБОРКА МУСОРА')
-				) {
+				if (col2.includes('УБОРКА МУСОРА')) {
 					trashCost = getNumValue(row.getCell(5))
 					return
 				}

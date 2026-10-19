@@ -113,14 +113,21 @@ export function PlaceList({
 		<>
 			{places.map(place => {
 				const isCollapsed = collapsedIds.includes(place.id)
-
+				let placeTotal = 0
+				place.works.forEach(w => (placeTotal += w.quantity * w.price))
 				return (
 					<div
 						key={place.id}
 						className='w-full max-w-md space-y-3'
 					>
 						{/* Заголовок помещения */}
-						<div className='flex items-center justify-between px-1'>
+						<div
+							className={`sticky-header flex items-center justify-between px-1 ${
+								isDark
+									? 'bg-neutral-950 text-white'
+									: 'bg-slate-100 text-slate-900'
+							}`}
+						>
 							<div className='flex gap-2 items-center'>
 								<h2
 									className={`font-semibold text-sm uppercase tracking-wide ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
@@ -134,6 +141,11 @@ export function PlaceList({
 								>
 									<Pencil className='w-4 h-4' />
 								</button>
+								<h2
+									className={`text-sm tracking-wide ${isDark ? 'text-neutral-700' : 'text-slate-500'}`}
+								>
+									- {placeTotal.toLocaleString('ru-RU')}₽
+								</h2>
 							</div>
 							<div className='select-none flex items-center gap-1'>
 								<button

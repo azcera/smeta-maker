@@ -89,15 +89,9 @@ export default function HomePage() {
 		const container = scrollContainerRef.current
 		if (!container) return
 
-		const handleScroll = () => {
-			console.log('scroll')
-			setCanReorder(false)
-		}
+		const handleScroll = () => setCanReorder(false)
 
-		const handleScrollEnd = () => {
-			console.log('scroll end')
-			setCanReorder(true)
-		}
+		const handleScrollEnd = () => setCanReorder(true)
 
 		container.addEventListener('scroll', handleScroll, { passive: true })
 		container.addEventListener('scrollend', handleScrollEnd)
@@ -120,7 +114,6 @@ export default function HomePage() {
 				ref={scrollContainerRef}
 				className='app-scroll no-scrollbar flex flex-col min-h-0 items-center w-full flex-1 space-y-5 px-4'
 				style={{
-					paddingTop: 'calc(1rem + env(safe-area-inset-top, 0px))',
 					paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))'
 				}}
 			>
