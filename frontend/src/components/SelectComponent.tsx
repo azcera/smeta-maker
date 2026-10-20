@@ -75,7 +75,7 @@ export function SelectComponent({
 			>
 				<select
 					size={8}
-					value={value}
+					value={value ?? ''}
 					onChange={e => setValue(e.target.value)}
 					onFocus={() => setIsOpen(true)}
 					onBlur={() => setIsOpen(false)}
@@ -84,6 +84,15 @@ export function SelectComponent({
 						`${themeClasses} py-1 w-full flex items-center justify-between cursor-pointer pr-10 pl-2 focus:outline-0 appearance-none rounded-md truncate`
 					}
 				>
+					{!value && (
+						<option
+							value=''
+							disabled
+							hidden
+						>
+							Выберите элемент
+						</option>
+					)}
 					<optgroup label={name}>
 						{options.map(o => (
 							<option

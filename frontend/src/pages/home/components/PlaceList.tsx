@@ -32,9 +32,14 @@ export function PlaceList({
 	onAddWorkClick,
 	canReorder
 }: PlaceListProps) {
-	const { isReorder, reorderWork } = useSmetaStore()
+	const {
+		isReorder,
+		reorderWork,
+		collapsedIds,
+		toggleCollapse,
+		removeCollapse
+	} = useSmetaStore()
 
-	const [collapsedIds, setCollapsedIds] = useState<string[]>([])
 	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const [isPlaceEditModal, setIsPlaceEditModal] = useState(false)
 	const [editingPlace, setEditingPlace] = useState<Place | undefined>()
@@ -94,12 +99,6 @@ export function PlaceList({
 		)
 	}
 
-	const toggleCollapse = (id: string) => {
-		setCollapsedIds(prev =>
-			prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-		)
-	}
-
 	const showModalPlace = (place: Place, action: 'DELETE' | 'EDIT') => {
 		setEditingPlace(place)
 		if (action === 'DELETE') {
@@ -122,30 +121,32 @@ export function PlaceList({
 					>
 						{/* Заголовок помещения */}
 						<div
-							className={`sticky-header flex items-center justify-between px-1 ${
+							className={`sticky-header border-e-lime-950 flex items-center justify-between px-1 ${
 								isDark
 									? 'bg-neutral-950 text-white'
 									: 'bg-slate-100 text-slate-900'
 							}`}
 						>
-							<div className='flex gap-2 items-center'>
+							<div className='flex min-w-0 gap-2 items-center'>
 								<h2
-									className={`font-semibold text-sm uppercase tracking-wide ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
+									className={`flex-2 truncate font-semibold text-sm uppercase tracking-wide ${isDark ? 'text-neutral-400' : 'text-slate-500'}`}
 								>
 									{place.name}
 								</h2>
-								<button
-									onClick={() => showModalPlace(place, 'EDIT')}
-									className={`select-none p-1.5 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-slate-200 text-slate-400'}`}
-									title='Редактировать'
-								>
-									<Pencil className='w-4 h-4' />
-								</button>
-								<h2
-									className={`text-sm tracking-wide ${isDark ? 'text-neutral-700' : 'text-slate-500'}`}
-								>
-									- {placeTotal.toLocaleString('ru-RU')}₽
-								</h2>
+								<div className='flex flex-1 items-center'>
+									<button
+										onClick={() => showModalPlace(place, 'EDIT')}
+										className={`select-none p-1.5 rounded-lg cursor-pointer transition-colors ${isDark ? 'hover:bg-neutral-800 text-neutral-500' : 'hover:bg-slate-200 text-slate-400'}`}
+										title='Редактировать'
+									>
+										<Pencil className='w-4 h-4' />
+									</button>
+									<h2
+										className={`text-sm text-nowrap tracking-wide ${isDark ? 'text-neutral-500' : 'text-slate-500'}`}
+									>
+										- {placeTotal.toLocaleString('ru-RU')}₽
+									</h2>
+								</div>
 							</div>
 							<div className='select-none flex items-center gap-1'>
 								<button
@@ -251,6 +252,7 @@ export function PlaceList({
 						onClick: () => {
 							setIsDeleteModal(false)
 							if (!editingPlace) return
+							removeCollapse(editingPlace.id)
 							onRemovePlace(editingPlace.id)
 						}
 					}

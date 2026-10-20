@@ -71,11 +71,16 @@ interface SmetaStore {
 
 	isSolidView: boolean
 	setIsSolidView: (value: boolean) => void
+
+	collapsedIds: string[]
+	setCollapsedIds: (value: string[]) => void
+	toggleCollapse: (id: string) => void
+	removeCollapse: (id: string) => void
 }
 
 export const useSmetaStore = create<SmetaStore>()(
 	persist(
-		set => ({
+		(set, get) => ({
 			objectName: '',
 			setObjectName: name => set({ objectName: name }),
 
@@ -229,7 +234,8 @@ export const useSmetaStore = create<SmetaStore>()(
 					isTransportCost: false,
 					isTrashCost: false,
 					objectName: '',
-					importedTable: null
+					importedTable: null,
+					collapsedIds: []
 				}),
 			tourStep: null,
 			isTourCompleted: false,
@@ -279,6 +285,21 @@ export const useSmetaStore = create<SmetaStore>()(
 			setIsSolidView: value =>
 				set({
 					isSolidView: value
+				}),
+			collapsedIds: [],
+			setCollapsedIds: value => set({ collapsedIds: value }),
+			toggleCollapse: id => {
+				const collapsedIds = get().collapsedIds
+				const newList = collapsedIds.includes(id)
+					? collapsedIds.filter(item => item !== id)
+					: [...collapsedIds, id]
+				set({
+					collapsedIds: newList
+				})
+			},
+			removeCollapse: id =>
+				set({
+					collapsedIds: get().collapsedIds.filter(item => item !== id)
 				})
 		}),
 

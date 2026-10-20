@@ -1,5 +1,5 @@
 import { Save } from 'lucide-react'
-import type { RefObject, SubmitEvent } from 'react'
+import { useEffect, useState, type RefObject, type SubmitEvent } from 'react'
 import { Header } from '../../../components/layout/Header'
 import { SelectComponent } from '../../../components/SelectComponent'
 import { useSmetaStore } from '../../../store/smetaStore'
@@ -49,6 +49,17 @@ export function WorkFormStep({
 	}`
 
 	const { dbUnits } = useSmetaStore()
+
+	const [inputValue, setInputValue] = useState<string>(
+		quantity ? String(quantity) : ''
+	)
+
+	useEffect(() => {
+		if (document.activeElement !== quantityRef.current) {
+			// Пока значение строго 0 или существует, приводим к строке, иначе оставляем пустым
+			setInputValue(quantity === 0 || quantity ? String(quantity) : '')
+		}
+	}, [quantity])
 
 	return (
 		<div
@@ -127,11 +138,41 @@ export function WorkFormStep({
 							disabled={unit === 'комплекс'}
 							type='number'
 							inputMode='decimal'
-							value={quantity || ''}
+							step='any'
+							min='0'
+							value={inputValue}
 							onChange={e => {
-								const value = e.target.value === '' ? 0 : Number(e.target.value)
-								setTempQuantity(value)
-								setQuantity(value)
+								let rawValue = e.target.value
+								rawValue = rawValue.replace(',', '.')
+								setInputValue(rawValue)
+
+								// Если инпут пустой, даем пользователю его стереть (не пишем насильно 0 во временный стейт ввода)
+								if (rawValue === '') {
+									setTempQuantity(0)
+									setQuantity(0)
+									return
+								}
+
+								const parsedValue = Number(rawValue)
+
+								// Разрешаем обновление стейтов для любого валидного числа, включая 0
+								if (!isNaN(parsedValue) && !rawValue.endsWith('.')) {
+									setTempQuantity(parsedValue)
+									setQuantity(parsedValue)
+								}
+							}}
+							onBlur={() => {
+								// Защита: если инпут остался пустым или закончился на точку при выходе из фокуса
+								if (inputValue === '') {
+									setInputValue('0')
+									setTempQuantity(0)
+									setQuantity(0)
+								} else if (inputValue.endsWith('.')) {
+									const fixedValue = inputValue.slice(0, -1)
+									setInputValue(fixedValue)
+									setTempQuantity(Number(fixedValue) || 0)
+									setQuantity(Number(fixedValue) || 0)
+								}
 							}}
 							className={inputClass}
 						/>

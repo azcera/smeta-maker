@@ -5,11 +5,11 @@ import { playTour } from '../../components/InteractiveTour'
 import { Header } from '../../components/layout/Header'
 import Modal from '../../components/Modal'
 import type { SwitcherOption } from '../../components/SelectComponent'
+import type { ViewTypes } from '../../store/smetaStore'
 import { FileImporter } from './components/FileImporter'
 import ListSwitcher from './components/ListSwitcher'
 import Switcher from './components/Switcher'
 import { useSettings } from './hooks/useSettings'
-import type { ViewTypes } from '../../store/smetaStore'
 
 export default function SettingsPage() {
 	const navigate = useNavigate()
@@ -39,7 +39,9 @@ export default function SettingsPage() {
 		handleFileChange,
 		handleCostChange,
 		isSearchMethod,
-		setIsSearchMethod
+		setIsSearchMethod,
+		clearAll,
+		places
 	} = useSettings()
 
 	useEffect(() => {
@@ -63,6 +65,8 @@ export default function SettingsPage() {
 		{ id: 'QUANTITY', name: 'Цена за единицу' },
 		{ id: 'TOTAL', name: 'Общая стоимость' }
 	]
+
+	const [isClearAllModal, showClearAllModal] = useState(false)
 
 	return (
 		<div
@@ -181,13 +185,13 @@ export default function SettingsPage() {
 							: 'bg-white border border-slate-200 shadow-sm'
 					}`}
 				>
-					<div className='flex items-center justify-between '>
+					<div className='flex w-full flex-col  gap-3'>
 						<button
 							onClick={() => playTour(navigate)}
-							className={`flex-1 h-12 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+							className={`flex-1 h-12  p-3 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
 								isDark
-									? 'bg-white text-black hover:bg-neutral-100'
-									: 'bg-blue-600 text-white hover:bg-blue-700'
+									? 'bg-white text-black hover:bg-white/90'
+									: 'bg-blue-600 text-white hover:bg-blue-600/90'
 							} disabled:opacity-40 disabled:cursor-not-allowed`}
 						>
 							<RefreshCcw
@@ -195,6 +199,21 @@ export default function SettingsPage() {
 							/>
 							Перепройти обучение
 						</button>
+						{places.length > 0 || objectName.length > 0 || importedTable ? (
+							<button
+								onClick={() => showClearAllModal(true)}
+								className={`flex-1 h-12  p-3 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+									isDark
+										? 'bg-red-600 text-white hover:bg-red-600/90'
+										: 'bg-red-600 text-white hover:bg-red-600/90'
+								} disabled:opacity-40 disabled:cursor-not-allowed`}
+							>
+								<Trash
+									className={`w-5 h-5 ${isDark ? 'text-white' : 'text-white'}`}
+								/>
+								Очистить данные
+							</button>
+						) : null}
 					</div>
 				</div>
 
@@ -206,6 +225,29 @@ export default function SettingsPage() {
 					onClose={() => setIsModalOpen(false)}
 					description={error as string}
 					isOpen={isModalOpen}
+				/>
+				<Modal
+					title='Вы уверены?'
+					buttons={{
+						grey: {
+							onClick: () => {
+								showClearAllModal(false)
+							},
+							title: 'Оставить'
+						},
+						blue: {
+							onClick: () => {
+								clearAll()
+								showClearAllModal(false)
+							},
+							title: 'Удалить'
+						}
+					}}
+					onClose={() => showClearAllModal(false)}
+					description={
+						'Удаление данных сметы - восстановить данные после этого не получится.'
+					}
+					isOpen={isClearAllModal}
 				/>
 			</div>
 		</div>

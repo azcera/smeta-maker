@@ -1,4 +1,4 @@
-import { Check, Download, Eye, EyeClosed, Settings } from 'lucide-react'
+import { Check, Download, Maximize2, Minimize2, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSmetaStore } from '../../../store/smetaStore'
 
@@ -28,9 +28,9 @@ export function BottomActionBar({
 	return (
 		<div className='fixed bottom-0 left-0 right-0 z-20'>
 			<div
-				className='max-w-md mx-auto px-4.5 pt-3 flex flex-col'
+				className='max-w-md mx-auto px-4.5 flex flex-col'
 				style={{
-					paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'
+					paddingBottom: 'max(env(safe-area-inset-bottom), 10px)'
 				}}
 			>
 				<button
@@ -90,11 +90,15 @@ export function BottomActionBar({
 									? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300'
 									: 'bg-gray-300 hover:bg-gray-200 text-slate-700'
 							}`}
+							title={isSolidView ? 'Расширить' : 'Сжать'}
 						>
 							{isSolidView ? (
-								<EyeClosed className='w-5 h-5' />
+								<Minimize2 className='w-5 h-5' />
 							) : (
-								<Eye className='w-5 h-5' />
+								<Maximize2
+									name=''
+									className='w-5 h-5'
+								/>
 							)}
 						</button>
 					)}

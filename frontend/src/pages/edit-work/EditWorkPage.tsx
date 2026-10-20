@@ -124,6 +124,15 @@ export default function EditWorkPage() {
 			return
 		}
 
+		if (!quantity || quantity <= 0) {
+			setModalMessage({
+				title: 'Ошибка',
+				description: 'Количество не может быть меньше или равным 0.'
+			})
+			setIsErrorModal(true)
+			return
+		}
+
 		const workData = { name, unit, quantity, price, fromDb }
 
 		if (isNew) {

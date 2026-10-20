@@ -1,6 +1,7 @@
 import { X } from 'lucide-react'
 import { useEffect, useRef, useState, type SubmitEvent } from 'react'
 import { useSmetaStore } from '../store/smetaStore'
+import { SelectComponent, type SwitcherOption } from './SelectComponent'
 
 interface Props {
 	open: boolean
@@ -8,6 +9,25 @@ interface Props {
 	value?: string
 	placeId?: string
 }
+
+const PLACE_NAMES_OPTIONS: SwitcherOption[] = [
+	{
+		id: 'Коридор',
+		name: 'Коридор'
+	},
+	{
+		id: 'Ванная',
+		name: 'Ванная'
+	},
+	{
+		id: 'Кухня',
+		name: 'Кухня'
+	},
+	{
+		id: 'Санузел',
+		name: 'Санузел'
+	}
+]
 
 export default function PlaceModal({
 	open,
@@ -31,8 +51,10 @@ export default function PlaceModal({
 
 	if (!open) return null
 
-	const handleSubmit = (e: SubmitEvent<HTMLFormElement>) => {
-		e.preventDefault()
+	const handleSubmit = (e: SubmitEvent<HTMLFormElement> | null) => {
+		if (e) {
+			e.preventDefault()
+		}
 		if (!name.trim()) return
 		if (value.length > 0) {
 			if (placeId) {
@@ -82,7 +104,7 @@ export default function PlaceModal({
 								isDark ? 'text-neutral-400' : 'text-slate-600'
 							}`}
 						>
-							Название помещения
+							Введите название помещения
 						</label>
 						<input
 							id='placeModalInput'
@@ -105,6 +127,28 @@ export default function PlaceModal({
 							}`}
 						/>
 					</div>
+
+					{!value && (
+						<>
+							<label
+								className={`block text-sm mb-1.5 ${
+									isDark ? 'text-neutral-400' : 'text-slate-600'
+								}`}
+							>
+								Или выберите из вариантов:
+							</label>
+							<SelectComponent
+								name='Наименования помещений'
+								options={PLACE_NAMES_OPTIONS}
+								setValue={v => {
+									setName(v)
+									addPlace(v.trim())
+									onClose()
+								}}
+								value={''}
+							/>
+						</>
+					)}
 					<div className='flex gap-3 pt-1'>
 						<button
 							type='button'
