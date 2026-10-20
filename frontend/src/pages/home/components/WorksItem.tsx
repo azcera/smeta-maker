@@ -7,6 +7,7 @@ import Modal from '../../../components/Modal'
 import { useSmetaStore } from '../../../store/smetaStore'
 import { type Place, type Work } from '../../../types'
 import { useLongPress } from '../../../utils/hooks/useLongPress'
+import { getUnitColor } from '../../../utils/unitColors'
 
 interface Props {
 	place: Place
@@ -15,30 +16,13 @@ interface Props {
 	isOverlay?: boolean // ← новый проп
 }
 
-const UNIT_COLORS: Record<string, string> = {
-	м2: '#613435',
-	'м²': '#613435',
-	м3: '#613435',
-	'м³': '#613435',
-	комплекс: '#4B6134',
-	'м.п.': '#423461',
-	'м/п': '#423461',
-	'м.п': '#423461',
-	шт: '#615A34'
-}
-
-function getUnitColor(unit: string) {
-	const key = unit.toLowerCase().trim()
-	return UNIT_COLORS[key] || '#4B5563'
-}
-
 export default function WorkItem({
 	place,
 	work,
 	isOverlay = false,
 	id
 }: Props) {
-	const { removeWork, viewType, isReorder, setIsReorder, isSolidView } =
+	const { removeWork, viewType, isReorder, setIsReorder, isSolidView, isDark } =
 		useSmetaStore()
 	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const longPressedRef = useRef(false)
@@ -98,11 +82,11 @@ export default function WorkItem({
 		>
 			<div
 				className={`
-		rounded-2xl p-4 text-white relative shadow-lg select-none
+		rounded-2xl p-4 text-white  relative shadow-lg select-none
 		${isReorder && !isOverlay && !isDragging ? 'animate-wiggle' : ''}
 		${isOverlay ? 'shadow-2xl scale-105' : ''}
 	`}
-				style={{ backgroundColor: getUnitColor(work.unit) }}
+				style={{ backgroundColor: getUnitColor(work.unit, { isDark: isDark }) }}
 			>
 				<p
 					className={`${isSolidView ? 'hidden' : ''} absolute top-3.5 left-3 

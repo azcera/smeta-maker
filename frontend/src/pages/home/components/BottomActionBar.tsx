@@ -1,4 +1,4 @@
-import { Check, Download, Eye, EyeClosed, Settings, Trash2 } from 'lucide-react'
+import { Check, Download, Eye, EyeClosed, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSmetaStore } from '../../../store/smetaStore'
 
@@ -6,7 +6,6 @@ interface BottomActionBarProps {
 	total: number
 	allWorksCount: number
 	saving: boolean
-	onDeleteClick: () => void
 	onSaveClick: () => void
 }
 
@@ -14,7 +13,6 @@ export function BottomActionBar({
 	total,
 	allWorksCount,
 	saving,
-	onDeleteClick,
 	onSaveClick
 }: BottomActionBarProps) {
 	const {
@@ -43,7 +41,7 @@ export function BottomActionBar({
 					className={`select-none block mx-auto mb-3 cursor-pointer px-4 py-1.5 rounded-full text-sm ${
 						isDark
 							? 'bg-neutral-800 text-neutral-300'
-							: 'bg-slate-100 text-slate-600'
+							: 'bg-gray-200 text-slate-600'
 					}`}
 				>
 					Итого:{' '}
@@ -57,17 +55,6 @@ export function BottomActionBar({
 				</button>
 
 				<div className='flex items-center gap-3'>
-					{!isReorder && (
-						<button
-							id='deleteAllButton'
-							type='button'
-							onClick={onDeleteClick}
-							className='h-12 px-4 rounded-2xl bg-red-500/90 hover:bg-red-500  flex items-center justify-center transition-colors cursor-pointer shrink-0 '
-						>
-							<Trash2 className='w-5 h-5 text-white' />
-						</button>
-					)}
-
 					<button
 						type='button'
 						id={isReorder ? 'saveReorder' : ''}
@@ -101,13 +88,13 @@ export function BottomActionBar({
 							className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
 								isDark
 									? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300'
-									: 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+									: 'bg-gray-300 hover:bg-gray-200 text-slate-700'
 							}`}
 						>
 							{isSolidView ? (
-								<EyeClosed className='w-5 h-5 text-white' />
+								<EyeClosed className='w-5 h-5' />
 							) : (
-								<Eye className='w-5 h-5 text-white' />
+								<Eye className='w-5 h-5' />
 							)}
 						</button>
 					)}
@@ -119,7 +106,7 @@ export function BottomActionBar({
 							className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
 								isDark
 									? 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300'
-									: 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+									: 'bg-gray-300 hover:bg-gray-200 text-slate-700'
 							}`}
 						>
 							<Settings className='w-5 h-5' />

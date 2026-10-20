@@ -19,12 +19,10 @@ export default function HomePage() {
 	const navigate = useNavigate()
 	const {
 		places,
-		objectName,
 		transportCost,
 		trashCost,
 		isDark,
 		removePlace,
-		clearAll,
 		isTransportCost,
 		isTrashCost,
 		setIsReorder,
@@ -38,7 +36,6 @@ export default function HomePage() {
 	const [showAddPlace, setShowAddPlace] = useState(false)
 	const [isErrorModal, setIsErrorModal] = useState(false)
 	const [isTourModal, setIsTourModal] = useState(false)
-	const [isDeleteModal, setIsDeleteModal] = useState(false)
 	const [modalMessage, setModalMessage] = useState<ModalMessageType>({
 		title: 'Ошибка',
 		description: ''
@@ -143,10 +140,6 @@ export default function HomePage() {
 				allWorksCount={allWorksCount}
 				saving={saving}
 				onSaveClick={handleSave}
-				onDeleteClick={() => {
-					if (allWorksCount > 0 || objectName.length > 0 || places.length > 0)
-						setIsDeleteModal(true)
-				}}
 			/>
 
 			<PlaceModal
@@ -160,23 +153,6 @@ export default function HomePage() {
 				isOpen={isErrorModal}
 				onClose={navigateToSettings}
 				buttons={{ blue: { title: 'Ок', onClick: navigateToSettings } }}
-			/>
-
-			<Modal
-				isOpen={isDeleteModal}
-				onClose={() => setIsDeleteModal(false)}
-				description='Выберите действие'
-				title='Уверены, что хотите очистить данные?'
-				buttons={{
-					grey: { title: 'Нет', onClick: () => setIsDeleteModal(false) },
-					blue: {
-						title: 'Удалить',
-						onClick: () => {
-							clearAll()
-							setIsDeleteModal(false)
-						}
-					}
-				}}
 			/>
 			<Modal
 				isOpen={isTourModal}
