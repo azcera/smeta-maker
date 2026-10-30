@@ -22,6 +22,7 @@
 		"cross-env": "^10.1.0"
 	},
 	"dependencies": {
-		"dotenv": "^18.0.5"
+		"dotenv": "^18.0.5",
+		"slugify": "^1.6.9"
 	}
 }

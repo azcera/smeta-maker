@@ -1,5 +1,32 @@
+import cors from 'cors'
+import dotenv from 'dotenv'
+import express, { NextFunction, Request, Response } from 'express'
+import path from 'path'
 import serverless from 'serverless-http'
-import app from './app'
+import { listsRouter } from './routes/listsRoutes'
+import { smetaRouter } from './routes/smetaRoutes'
+if (process.env.NODE_ENV !== 'production') {
+	dotenv.config({
+		path: path.resolve(__dirname, '../../.env')
+	})
+} else {
+	dotenv.config()
+}
+
+const app = express()
+
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+
+// логирование запросов
+app.use('/api', (req: Request, res: Response, next: NextFunction) => {
+	console.log(`${req.method} ${req.path}`)
+	next()
+})
+
+app.use('/api', listsRouter)
+app.use('/api', smetaRouter)
 
 const PORT = Number(process.env.PORT || 3000)
 
@@ -27,3 +54,5 @@ if (process.env.NODE_ENV !== 'production') {
 		console.log(`[Local] Сервер запущен на http://localhost:${PORT}`)
 	})
 }
+
+export default app
