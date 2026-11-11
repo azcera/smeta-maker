@@ -1,41 +1,25 @@
 import ExcelJS from 'exceljs'
 import slugify from 'slugify'
-import { TEMPLATE_BASE64 } from '../templateBase64'
-import { changeRowColor, EXCEL_COLORS, setBorderRange } from '../utils/excel'
-
-interface WorkItem {
-	name: string
-	unit: string
-	quantity: number
-	price: number
-}
-
-type Places = Record<string, WorkItem[]>
-
-interface GenerateSmetaBody {
-	object?: string
-	places?: Places
-	transportCost?: number
-	trashCost?: number
-}
+import { TEMPLATE_BASE64 } from '../../../templateBase64'
+import {
+	applyRowAlignment,
+	changeRowColor,
+	EXCEL_COLORS,
+	setBorderRange
+} from '../../../utils/excel'
+import type { GenerateSmetaBody } from './smeta.make.schema'
 
 export const generateSmeta = async (body: GenerateSmetaBody) => {
 	const year = new Date().getFullYear()
 
-	const { object, places = {}, transportCost, trashCost } = body
+	const { object, places, transportCost, trashCost } = body
 
-	if (!object) {
-		throw new Error('Не передано или некорректное наименование объекта')
-	}
-
-	if (Object.entries(places).length === 0) {
-		throw new Error('Добавляемые работы невозможно обработать')
-	}
 	const placeEntries = Object.entries(places)
+
 	const hasMultiplePlaces = placeEntries.length > 1
 
 	const totalParts: string[] = []
-	let totals: number[] = []
+	const totals: number[] = []
 
 	const workbook = new ExcelJS.Workbook()
 
@@ -104,13 +88,7 @@ export const generateSmeta = async (body: GenerateSmetaBody) => {
 				result: quantity * price
 			}
 
-			row.eachCell((cell, colNum) => {
-				cell.alignment = {
-					wrapText: true,
-					horizontal: colNum === 2 ? 'left' : 'center',
-					vertical: 'middle'
-				}
-			})
+			applyRowAlignment(row)
 
 			row.commit()
 			currentRow++
@@ -130,7 +108,6 @@ export const generateSmeta = async (body: GenerateSmetaBody) => {
 			}
 		}
 
-		// Промежуточный итог помещения нужен только при нескольких помещениях
 		// Промежуточный итог помещения нужен только при нескольких помещениях
 		if (hasMultiplePlaces) {
 			const subtotalRow = sheet.getRow(currentRow)
@@ -174,13 +151,7 @@ export const generateSmeta = async (body: GenerateSmetaBody) => {
 
 			subtotalRow.getCell(6).numFmt = '#,##0"р."'
 
-			subtotalRow.eachCell({ includeEmpty: true }, (cell, colNum) => {
-				cell.alignment = {
-					wrapText: true,
-					horizontal: colNum === 2 ? 'left' : 'center',
-					vertical: 'middle'
-				}
-			})
+			applyRowAlignment(subtotalRow, true)
 
 			subtotalRow.commit()
 
@@ -222,13 +193,7 @@ export const generateSmeta = async (body: GenerateSmetaBody) => {
 
 		totals.push(price)
 
-		row.eachCell((cell, colNum) => {
-			cell.alignment = {
-				vertical: 'middle',
-				horizontal: colNum === 2 ? 'left' : 'center',
-				wrapText: true
-			}
-		})
+		applyRowAlignment(row)
 
 		row.commit()
 		totalParts.push(`F${currentRow}`)
@@ -248,8 +213,7 @@ export const generateSmeta = async (body: GenerateSmetaBody) => {
 		color: { argb: `FF${EXCEL_COLORS.white}` }
 	}
 
-	let total = 0
-	totals.forEach(v => (total += v))
+	const total = totals.reduce((sum, v) => sum + v, 0)
 
 	totalRow.getCell(6).value = {
 		formula: totalParts.length ? `SUM(${totalParts.join(',')})` : '0',

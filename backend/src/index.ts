@@ -3,8 +3,10 @@ import dotenv from 'dotenv'
 import express, { NextFunction, Request, Response } from 'express'
 import path from 'path'
 import serverless from 'serverless-http'
-import { listsRouter } from './routes/listsRoutes'
-import { smetaRouter } from './routes/smetaRoutes'
+import { listsRouter } from './modules/lists/lists.routes'
+import { smetaRouter } from './modules/smeta/smeta.routes'
+import { errorHandler } from './middleware/errorHandler'
+
 if (process.env.NODE_ENV !== 'production') {
 	dotenv.config({
 		path: path.resolve(__dirname, '../../.env')
@@ -27,6 +29,8 @@ app.use('/api', (req: Request, res: Response, next: NextFunction) => {
 
 app.use('/api', listsRouter)
 app.use('/api', smetaRouter)
+
+app.use(errorHandler)
 
 const PORT = Number(process.env.PORT || 3000)
 

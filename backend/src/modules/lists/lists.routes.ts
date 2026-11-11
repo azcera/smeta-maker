@@ -1,9 +1,7 @@
 import { Router } from 'express'
-import {
-	getLastUpdate,
-	getUnits,
-	getWorks
-} from '../controllers/listsController'
+import { getLastUpdate } from './last-update/lists.last-update.controller'
+import { getUnits } from './units/lists.units.controller'
+import { getWorks } from './works/lists.works.controller'
 
 const listsRouter = Router()
 

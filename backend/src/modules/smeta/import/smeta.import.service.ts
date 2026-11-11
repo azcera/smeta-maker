@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs'
-import { AppError } from '../utils/appError'
-import { unitAdapter } from '../utils/unitAdapter'
+import { AppError } from '../../../utils/appError'
+import { unitAdapter } from '../../../utils/unitAdapter'
+import { uploadSmetaResultSchema } from './smeta.import.schema'
 
 function getNumValue(cell: ExcelJS.Cell): number {
 	const value = cell.value
@@ -82,13 +83,10 @@ export const uploadSmeta = async (file: Buffer) => {
 			? objectCell.result
 			: objectCell
 
-	return {
-		success: true,
-		data: {
-			object: objectName?.toString() || null,
-			places,
-			transportCost,
-			trashCost
-		}
-	}
+	return uploadSmetaResultSchema.parse({
+		object: objectName?.toString() || null,
+		places,
+		transportCost,
+		trashCost
+	})
 }

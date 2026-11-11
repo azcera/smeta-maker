@@ -36,3 +36,13 @@ export const EXCEL_COLORS = {
 	white: 'FFFFFF',
 	darkBlue: '31869B'
 }
+
+export function applyRowAlignment(row: ExcelJS.Row, includeEmpty = false) {
+	row.eachCell({ includeEmpty }, (cell, colNum) => {
+		cell.alignment = {
+			wrapText: true,
+			horizontal: colNum === 2 ? 'left' : 'center',
+			vertical: 'middle'
+		}
+	})
+}
