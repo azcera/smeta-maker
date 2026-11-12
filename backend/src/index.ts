@@ -1,19 +1,10 @@
 import cors from 'cors'
-import dotenv from 'dotenv'
 import express, { NextFunction, Request, Response } from 'express'
-import path from 'path'
 import serverless from 'serverless-http'
 import { listsRouter } from './modules/lists/lists.routes'
 import { smetaRouter } from './modules/smeta/smeta.routes'
 import { errorHandler } from './middleware/errorHandler'
-
-if (process.env.NODE_ENV !== 'production') {
-	dotenv.config({
-		path: path.resolve(__dirname, '../../.env')
-	})
-} else {
-	dotenv.config()
-}
+import './config/env' // load env first
 
 const app = express()
 
