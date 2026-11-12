@@ -21,8 +21,9 @@ const STEP_PATH: Record<number, string | RegExp> = {
 	12: '/',
 	13: '/',
 	14: '/',
-	15: '/',
-	16: '/'
+	15: /^\/settings/, // нажать на удаление
+	16: /^\/settings/, // подтверждение
+	17: /^\/settings/ // конец тура
 }
 
 function pathMatches(stepIndex: number, pathname: string) {
@@ -521,13 +522,38 @@ export function InteractiveTour() {
 						onDeselected: () =>
 							document.body.classList.remove('tour-allow-all-clicks')
 					},
-					// 14. Удалить всё
+					// 14. Кнопка настроек
 					{
-						element: '#deleteAllButton',
+						element: '#settingsButton',
+						waitForElement: 5000,
+						popover: {
+							title: 'Настройки',
+							description: 'Откройте настройки для продолжения',
+							side: 'top',
+							showButtons: []
+						},
+
+						onHighlighted: (el, _, { driver }) => {
+							setTourStep(13)
+							el?.addEventListener(
+								'click',
+								() => {
+									isNavigatingRef.current = true
+									setTourStep(14)
+									driver.destroy()
+								},
+								{ once: true }
+							)
+						}
+					},
+					// 15. Удалить всё
+					{
+						element: '#deleteAllButton1',
+						waitForElement: 5000,
 						popover: {
 							title: 'Удаление всего',
-							description: 'Очистите данные перед работой',
-							side: 'bottom',
+							description: 'Теперь очистите данные перед началом работы',
+							side: 'top',
 							showButtons: []
 						},
 						onHighlighted: (el, _, { driver }) => {
@@ -537,7 +563,7 @@ export function InteractiveTour() {
 							})
 						}
 					},
-					// 15. Подтверждение
+					// 16. Подтверждение
 					{
 						element: '#blueModalButton',
 						waitForElement: 5000,
@@ -554,7 +580,7 @@ export function InteractiveTour() {
 							})
 						}
 					},
-					// 16. Конец
+					// 17. Конец
 					{
 						element: '#endOfTour',
 						popover: {

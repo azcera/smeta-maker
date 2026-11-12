@@ -90,6 +90,7 @@ export default function SettingsPage() {
 			>
 				{/* Название объекта */}
 				<div
+					id='deleteAllButton1'
 					className={`rounded-2xl p-5 space-y-3 ${isDark ? 'bg-neutral-900' : 'bg-white border border-slate-200 shadow-sm'}`}
 				>
 					<label
@@ -201,6 +202,7 @@ export default function SettingsPage() {
 						</button>
 						{places.length > 0 || objectName.length > 0 || importedTable ? (
 							<button
+								id='deleteAllButton'
 								onClick={() => showClearAllModal(true)}
 								className={`flex-1 h-12  p-3 rounded-2xl font-semibold text-base transition-colors cursor-pointer flex items-center justify-center gap-2 ${
 									isDark

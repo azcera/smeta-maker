@@ -9,15 +9,15 @@ export const fetchLastUpdate = async (): Promise<LastUpdateRow | null> => {
 	const raw = await unwrap<unknown>(
 		supabase
 			.from(LIST_TABLE)
-			.select('created_at')
-			.not('created_at', 'is', null)
-			.order('created_at', { ascending: false })
+			.select('updated_at')
+			.not('updated_at', 'is', null)
+			.order('updated_at', { ascending: false })
 			.limit(1)
 			.maybeSingle()
 	)
 
 	if (raw === null) return null
 
-	// parse вернёт { created_at: Date }
+	// parse вернёт { updated_at: Date }
 	return lastUpdateRowSchema.parse(raw)
 }

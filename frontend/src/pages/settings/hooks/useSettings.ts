@@ -23,7 +23,7 @@ export function useSettings() {
 				setError(null)
 				formData.append('excel_file', e.target.files[0])
 
-				const response = await fetch(`${API_URL}/upload-smeta`, {
+				const response = await fetch(`${API_URL}/import-smeta`, {
 					method: 'POST',
 					body: formData
 				})

@@ -8,7 +8,7 @@ export async function fetchWorks(): Promise<{
 	works: DbWork[]
 	units: string[]
 }> {
-	const resWorks = await fetch(`${API_URL}/list`)
+	const resWorks = await fetch(`${API_URL}/works`)
 	if (!resWorks.ok) {
 		throw new Error('Не удалось загрузить список работ')
 	}
@@ -40,7 +40,7 @@ export function normalizeDbWork(item: DbWork): NormalizedWork {
 
 // if true => last time update
 export async function getLastUpdateTime(): Promise<number | null> {
-	const res = await fetch(`${API_URL}/get-update-time`)
+	const res = await fetch(`${API_URL}/last-update`)
 
 	if (!res.ok) {
 		throw new Error('Не удалось загрузить время обновления')
@@ -49,7 +49,7 @@ export async function getLastUpdateTime(): Promise<number | null> {
 	const data = await res.json()
 
 	if (!data || Array.isArray(data) || !data.updated_at) {
-		return null
+		throw new Error('Не удалось загрузить время обновления')
 	}
 
 	const serverTime = new Date(data.updated_at).getTime()
@@ -77,7 +77,7 @@ export async function generateSmeta(payload: {
 	transportCost?: number
 	trashCost?: number
 }) {
-	const res = await fetch(`${API_URL}/generate-smeta`, {
+	const res = await fetch(`${API_URL}/make-smeta`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(payload)

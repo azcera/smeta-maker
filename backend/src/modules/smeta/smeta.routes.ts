@@ -9,8 +9,8 @@ const upload = multer({
 	storage: multer.memoryStorage()
 })
 // генерация сметы в файл (экспорт)
-smetaRouter.get('/smeta', upload.single('excel_file'), makeSmeta)
+smetaRouter.post('/make-smeta', upload.single('excel_file'), makeSmeta)
 // преобразование сметы из файла (импорт)
-smetaRouter.post('/smeta', importSmeta)
+smetaRouter.post('/import-smeta', importSmeta)
 
 export { smetaRouter }
